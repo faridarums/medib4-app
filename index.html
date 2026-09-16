@@ -1,0 +1,8649 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080612">
+
+<title>Medib4</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+
+/* =====================================================
+ROOT
+===================================================== */
+
+:root{
+    --bg-main:#080612;
+    --bg-secondary:#100b1d;
+
+    --card:rgba(22,15,37,.90);
+    --card-hover:rgba(36,25,56,.96);
+
+    --text:#f8f7ff;
+    --muted:#aaa2bd;
+
+    --border:rgba(168,85,247,.20);
+
+    --purple:#a855f7;
+    --purple-dark:#7e22ce;
+
+    --lime:#84cc16;
+    --cyan:#06b6d4;
+    --pink:#ec4899;
+    --orange:#f97316;
+    --red:#ef4444;
+    --green:#22c55e;
+    --yellow:#eab308;
+    --blue:#38bdf8;
+    --teal:#14b8a6;
+    --indigo:#6366f1;
+
+    --page-grid-color:rgba(168,85,247,.09);
+
+    --shadow:
+        0 12px 40px rgba(0,0,0,.30);
+}
+
+/* =====================================================
+LIGHT MODE
+===================================================== */
+
+body.light{
+    --bg-main:#f3f0f8;
+    --bg-secondary:#ebe7f1;
+
+    --card:#ffffff;
+    --card-hover:#ffffff;
+
+    --text:#17131f;
+    --muted:#5f586b;
+
+    --border:rgba(72,55,91,.18);
+
+    --purple:#7e22ce;
+    --purple-dark:#6b21a8;
+
+    --lime:#4d7c0f;
+    --cyan:#0369a1;
+    --pink:#be185d;
+    --orange:#c2410c;
+    --red:#dc2626;
+    --green:#15803d;
+    --yellow:#a16207;
+    --blue:#0369a1;
+    --teal:#0f766e;
+    --indigo:#4f46e5;
+
+    --page-grid-color:rgba(92,72,120,.075);
+
+    --shadow:
+        0 10px 30px rgba(58,43,76,.12);
+}
+
+/* =====================================================
+RESET
+===================================================== */
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+}
+
+body{
+    font-family:"Vazirmatn",sans-serif;
+    color:var(--text);
+    background-color:var(--bg-main);
+
+    background-image:
+        linear-gradient(
+            to right,
+            var(--page-grid-color) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            var(--page-grid-color) 1px,
+            transparent 1px
+        ),
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(168,85,247,.15),
+            transparent 42%
+        );
+
+    background-size:
+        24px 24px,
+        24px 24px,
+        100% 100%;
+
+    background-attachment:fixed;
+
+    transition:
+        background-color .3s,
+        color .3s;
+}
+
+body.light{
+    background-image:
+        linear-gradient(
+            to right,
+            var(--page-grid-color) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            var(--page-grid-color) 1px,
+            transparent 1px
+        ),
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(126,34,206,.055),
+            transparent 42%
+        );
+}
+
+button,
+input{
+    font-family:inherit;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+}
+
+/* =====================================================
+APP
+===================================================== */
+
+.app{
+    width:100%;
+    max-width:520px;
+    min-height:100vh;
+    margin:auto;
+
+    padding:
+        12px
+        12px
+        100px;
+}
+
+/* =====================================================
+HEADER
+===================================================== */
+
+.header{
+    position:sticky;
+    top:10px;
+    z-index:50;
+
+    height:68px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:8px 12px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:25px;
+
+    background:var(--card);
+
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+
+    box-shadow:var(--shadow);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.logo{
+    width:43px;
+    height:43px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+
+    color:var(--purple);
+
+    flex-shrink:0;
+}
+
+.logo svg{
+    width:31px;
+    height:31px;
+    stroke-width:2.2;
+}
+
+.brand-text{
+    line-height:1;
+}
+
+.brand-title{
+    font-family:"Lalezar",sans-serif;
+    font-size:26px;
+}
+
+.brand-sub{
+    margin-top:5px;
+    color:var(--muted);
+    font-size:9px;
+}
+
+.theme-btn{
+    width:44px;
+    height:44px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:15px;
+    transition:.3s;
+}
+
+body:not(.light) .theme-btn{
+    color:#c084fc;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(168,85,247,.22),
+            rgba(91,33,182,.16)
+        );
+
+    border:
+        1px solid
+        rgba(192,132,252,.28);
+
+    box-shadow:
+        0 0 18px
+        rgba(168,85,247,.12);
+}
+
+body.light .theme-btn{
+    color:#d97706;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(251,191,36,.16),
+            rgba(245,158,11,.08)
+        );
+
+    border:
+        1px solid
+        rgba(217,119,6,.24);
+
+    box-shadow:
+        0 5px 16px
+        rgba(245,158,11,.10);
+}
+
+.theme-btn svg{
+    width:21px;
+    height:21px;
+}
+
+/* =====================================================
+SEARCH
+===================================================== */
+
+.search-box{
+    position:relative;
+
+    margin:
+        18px
+        2px
+        15px;
+}
+
+.search-box input{
+    width:100%;
+    height:52px;
+
+    padding:
+        0
+        48px
+        0
+        16px;
+
+    outline:none;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:18px;
+
+    background:var(--card);
+    color:var(--text);
+
+    font-size:12px;
+
+    box-shadow:var(--shadow);
+
+    caret-color:var(--purple);
+}
+
+.search-box input::placeholder{
+    color:var(--muted);
+    opacity:1;
+}
+
+.search-box input:focus{
+    border-color:
+        rgba(126,34,206,.40);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(126,34,206,.07),
+        var(--shadow);
+}
+
+.search-icon{
+    position:absolute;
+    right:17px;
+    top:16px;
+
+    color:var(--muted);
+}
+
+/* =====================================================
+GENERAL
+===================================================== */
+
+.screen{
+    animation:
+        fadeIn
+        .25s
+        ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:
+            translateY(8px);
+    }
+
+    to{
+        opacity:1;
+        transform:
+            translateY(0);
+    }
+}
+
+.page-title{
+    margin:
+        20px
+        4px
+        15px;
+}
+
+.page-title h1{
+    margin:0;
+    color:var(--text);
+    font-size:21px;
+    font-weight:900;
+}
+
+.card{
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:23px;
+
+    box-shadow:var(--shadow);
+}
+
+/* =====================================================
+SEMESTER
+===================================================== */
+
+.semester-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:13px;
+}
+
+.semester-card{
+    min-height:150px;
+
+    padding:22px;
+
+    display:flex;
+    align-items:center;
+    gap:17px;
+
+    position:relative;
+    overflow:hidden;
+
+    border-radius:27px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    box-shadow:var(--shadow);
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.semester-card:active{
+    transform:scale(.98);
+}
+
+.semester-card::after{
+    content:"";
+
+    position:absolute;
+
+    width:120px;
+    height:120px;
+
+    left:-45px;
+    bottom:-60px;
+
+    border-radius:50%;
+
+    background:
+        rgba(168,85,247,.10);
+}
+
+.semester-icon{
+    width:70px;
+    height:70px;
+    min-width:70px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:23px;
+
+    color:#c084fc;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(168,85,247,.18),
+            rgba(6,182,212,.10)
+        );
+
+    border:
+        1px solid
+        rgba(168,85,247,.18);
+}
+
+body.light .semester-icon{
+    color:#7e22ce;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(126,34,206,.09),
+            rgba(3,105,161,.06)
+        );
+
+    border-color:
+        rgba(126,34,206,.14);
+}
+
+.semester-icon svg{
+    width:36px;
+    height:36px;
+}
+
+.semester-info strong{
+    font-family:"Lalezar",sans-serif;
+    font-size:27px;
+    font-weight:400;
+    color:var(--text);
+}
+
+.semester-arrow{
+    margin-right:auto;
+    color:var(--muted);
+}
+
+/* =====================================================
+COURSES
+===================================================== */
+
+.course-grid{
+    display:grid;
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:12px;
+}
+
+.course-card{
+    min-height:160px;
+
+    padding:
+        15px
+        10px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+
+    position:relative;
+    overflow:hidden;
+
+    border-radius:25px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    box-shadow:var(--shadow);
+
+    cursor:pointer;
+
+    transition:
+        transform .18s,
+        background .2s;
+}
+
+.course-card:active{
+    transform:scale(.96);
+}
+
+.course-icon{
+    width:64px;
+    height:64px;
+    min-width:64px;
+
+    margin-bottom:11px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:20px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.07);
+}
+
+body.light .course-icon{
+    border-color:
+        rgba(72,55,91,.10);
+}
+
+.course-icon svg{
+    width:35px;
+    height:35px;
+    stroke-width:1.8;
+}
+
+.kidney-svg,
+.lungs-svg{
+    width:43px!important;
+    height:43px!important;
+
+    display:block;
+
+    fill:none;
+    stroke:currentColor;
+
+    stroke-linecap:round;
+    stroke-linejoin:round;
+
+    overflow:visible;
+}
+
+.course-card:hover .kidney-svg,
+.course-card:hover .lungs-svg{
+    transform:scale(1.05);
+
+    filter:
+        drop-shadow(
+            0 0 6px
+            currentColor
+        );
+}
+
+/* =====================================================
+COURSE COLORS
+===================================================== */
+
+.course-card:nth-child(1) .course-icon{
+    color:#38bdf8;
+    background:rgba(56,189,248,.13);
+}
+
+.course-card:nth-child(2) .course-icon{
+    color:#a855f7;
+    background:rgba(168,85,247,.13);
+}
+
+.course-card:nth-child(3) .course-icon{
+    color:#f59e0b;
+    background:rgba(245,158,11,.13);
+}
+
+.course-card:nth-child(4) .course-icon{
+    color:#22c55e;
+    background:rgba(34,197,94,.13);
+}
+
+.course-card:nth-child(5) .course-icon{
+    color:#ec4899;
+    background:rgba(236,72,153,.13);
+}
+
+.course-card:nth-child(6) .course-icon{
+    color:#06b6d4;
+    background:rgba(6,182,212,.13);
+}
+
+.course-card:nth-child(7) .course-icon{
+    color:#f97316;
+    background:rgba(249,115,22,.13);
+}
+
+.course-card:nth-child(8) .course-icon{
+    color:#ef4444;
+    background:rgba(239,68,68,.13);
+}
+
+.course-card:nth-child(9) .course-icon{
+    color:#8b5cf6;
+    background:rgba(139,92,246,.13);
+}
+
+.course-card:nth-child(10) .course-icon{
+    color:#14b8a6;
+    background:rgba(20,184,166,.13);
+}
+
+.course-card:nth-child(11) .course-icon{
+    color:#eab308;
+    background:rgba(234,179,8,.13);
+}
+
+.course-card:nth-child(12) .course-icon{
+    color:#6366f1;
+    background:rgba(99,102,241,.13);
+}
+
+.course-card:nth-child(13) .course-icon{
+    color:#84cc16;
+    background:rgba(132,204,22,.13);
+}
+
+.course-title{
+    color:var(--text);
+
+    font-size:13.5px;
+    font-weight:900;
+    line-height:1.8;
+
+    padding:
+        0
+        4px;
+}
+
+.course-progress-track{
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+
+    height:4px;
+
+    background:
+        rgba(168,85,247,.12);
+}
+
+.course-progress-fill{
+    height:100%;
+
+    border-radius:
+        0
+        3px
+        3px
+        0;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--purple),
+            var(--cyan)
+        );
+}
+
+.course-progress-label{
+    margin-top:6px;
+
+    font-size:9px;
+    font-weight:700;
+
+    color:var(--muted);
+}
+
+/* =====================================================
+BACK
+===================================================== */
+
+.back-btn{
+    display:flex;
+    align-items:center;
+    gap:7px;
+
+    margin:
+        18px
+        3px
+        14px;
+
+    background:none;
+    color:var(--muted);
+
+    font-size:11px;
+
+    transition:
+        color .2s;
+}
+
+.back-btn:active{
+    color:var(--text);
+}
+
+/* =====================================================
+COURSE PAGE
+===================================================== */
+
+.course-header-card{
+    padding:17px;
+    margin-bottom:12px;
+}
+
+.course-header-inner{
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
+
+.course-header-title{
+    color:var(--text);
+
+    font-size:16px;
+    font-weight:900;
+    line-height:1.8;
+}
+
+.course-header-sub{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:9px;
+}
+
+/* =====================================================
+MODE
+===================================================== */
+
+.mode-grid{
+    display:grid;
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:10px;
+}
+
+.mode-card{
+    min-height:150px;
+
+    padding:
+        17px
+        11px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    text-align:center;
+
+    border-radius:21px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    box-shadow:var(--shadow);
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.mode-card:active{
+    transform:scale(.97);
+}
+
+.mode-icon{
+    width:48px;
+    height:48px;
+
+    margin:
+        0
+        auto
+        10px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:15px;
+
+    color:var(--purple);
+
+    background:
+        rgba(168,85,247,.10);
+}
+
+body.light .mode-icon{
+    color:#7e22ce;
+    background:
+        rgba(126,34,206,.08);
+}
+
+.mode-card:nth-child(2) .mode-icon{
+    color:var(--cyan);
+
+    background:
+        rgba(6,182,212,.10);
+}
+
+body.light .mode-card:nth-child(2) .mode-icon{
+    color:#0369a1;
+
+    background:
+        rgba(3,105,161,.075);
+}
+
+.mode-icon svg{
+    width:25px;
+    height:25px;
+}
+
+.mode-card strong{
+    display:block;
+    color:var(--text);
+    font-size:12px;
+}
+
+/* =====================================================
+QUIZ EXIT BUTTON
+===================================================== */
+
+.quiz-exit-btn{
+    width:100%;
+    height:43px;
+
+    margin:
+        8px
+        0
+        12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:7px;
+
+    border-radius:15px;
+
+    color:#fca5a5;
+
+    background:
+        rgba(239,68,68,.075);
+
+    border:
+        1px solid
+        rgba(239,68,68,.16);
+
+    font-size:10px;
+    font-weight:800;
+
+    transition:
+        background .2s,
+        border-color .2s,
+        transform .15s;
+}
+
+.quiz-exit-btn svg{
+    width:17px;
+    height:17px;
+    stroke-width:2.2;
+}
+
+.quiz-exit-btn:active{
+    transform:scale(.98);
+
+    background:
+        rgba(239,68,68,.13);
+}
+
+body.light .quiz-exit-btn{
+    color:#b91c1c;
+
+    background:
+        rgba(220,38,38,.055);
+
+    border-color:
+        rgba(220,38,38,.18);
+}
+
+/* =====================================================
+QUIZ HEADER
+===================================================== */
+
+.quiz-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin:
+        10px
+        0;
+}
+
+.progress-text{
+    color:var(--muted);
+    font-size:11px;
+}
+
+.timer{
+    display:flex;
+    align-items:center;
+    gap:5px;
+
+    padding:
+        7px
+        10px;
+
+    border-radius:12px;
+
+    background:
+        rgba(239,68,68,.10);
+
+    color:var(--red);
+
+    font-size:11px;
+    font-weight:800;
+}
+
+.progress-bar{
+    height:6px;
+
+    margin-bottom:12px;
+
+    overflow:hidden;
+
+    border-radius:10px;
+
+    background:
+        rgba(168,85,247,.10);
+}
+
+body.light .progress-bar{
+    background:
+        rgba(126,34,206,.10);
+}
+
+.progress-fill{
+    height:100%;
+
+    border-radius:10px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    transition:.3s;
+}
+
+/* =====================================================
+QUESTION
+===================================================== */
+
+.question-card{
+    padding:18px;
+}
+
+body.light .question-card{
+    background:#ffffff;
+}
+
+.question-number{
+    display:inline-flex;
+    align-items:center;
+
+    margin-bottom:11px;
+
+    padding:
+        5px
+        9px;
+
+    border-radius:10px;
+
+    color:var(--purple);
+
+    background:
+        rgba(168,85,247,.10);
+
+    font-size:10px;
+    font-weight:900;
+}
+
+body.light .question-number{
+    color:#6b21a8;
+
+    background:
+        rgba(126,34,206,.085);
+}
+
+.question-text{
+    margin-bottom:18px;
+
+    color:var(--text);
+
+    font-size:14px;
+    font-weight:800;
+
+    line-height:2.05;
+}
+
+/* =====================================================
+OPTIONS
+===================================================== */
+
+.option{
+    width:100%;
+    min-height:52px;
+
+    margin-bottom:9px;
+
+    padding:
+        9px
+        11px;
+
+    display:flex;
+    align-items:center;
+
+    gap:10px;
+
+    text-align:right;
+
+    color:var(--text);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:16px;
+
+    background:
+        var(--bg-secondary);
+
+    box-shadow:none;
+
+    transition:
+        background .2s,
+        border-color .2s,
+        transform .15s;
+}
+
+.option:not(.disabled):active{
+    transform:scale(.985);
+}
+
+.option.selected{
+    border-color:
+        var(--purple);
+
+    background:
+        rgba(168,85,247,.14);
+
+    box-shadow:
+        0 0 0 2px
+        rgba(168,85,247,.06);
+}
+
+.option.correct{
+    border-color:
+        var(--green)!important;
+
+    background:
+        rgba(34,197,94,.14)!important;
+}
+
+.option.wrong{
+    border-color:
+        var(--red)!important;
+
+    background:
+        rgba(239,68,68,.14)!important;
+}
+
+.option.disabled{
+    cursor:default;
+}
+
+.option-letter{
+    width:30px;
+    height:30px;
+    min-width:30px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:9px;
+
+    color:var(--purple);
+
+    background:
+        rgba(168,85,247,.10);
+
+    font-size:10px;
+    font-weight:900;
+}
+
+.option.correct .option-letter{
+    color:var(--green);
+
+    background:
+        rgba(34,197,94,.12);
+}
+
+.option.wrong .option-letter{
+    color:var(--red);
+
+    background:
+        rgba(239,68,68,.12);
+}
+
+.option-text{
+    color:inherit;
+
+    font-size:11px;
+    line-height:1.8;
+}
+
+/* =====================================================
+LIGHT MODE OPTIONS
+===================================================== */
+
+body.light .option{
+    background:#f0edf4;
+
+    border-color:
+        rgba(72,55,91,.16);
+
+    color:#211b29;
+}
+
+body.light .option-letter{
+    background:#e3dce9;
+    color:#6b21a8;
+}
+
+body.light .option.selected{
+    background:#e5ddef;
+    border-color:#7e22ce;
+
+    color:#211b29;
+}
+
+body.light .option.correct{
+    background:
+        rgba(21,128,61,.105)!important;
+
+    border-color:
+        rgba(21,128,61,.40)!important;
+
+    color:#14532d;
+}
+
+body.light .option.wrong{
+    background:
+        rgba(220,38,38,.085)!important;
+
+    border-color:
+        rgba(220,38,38,.38)!important;
+
+    color:#7f1d1d;
+}
+
+body.light .option.correct .option-letter{
+    color:#15803d;
+    background:rgba(21,128,61,.10);
+}
+
+body.light .option.wrong .option-letter{
+    color:#dc2626;
+    background:rgba(220,38,38,.10);
+}
+
+/* =====================================================
+LIVE ANSWER STATS
+===================================================== */
+
+.quiz-answer-stats{
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:7px;
+
+    margin-top:12px;
+}
+
+.quiz-stat{
+    min-height:57px;
+
+    padding:
+        8px
+        5px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:15px;
+
+    border:
+        1px solid
+        var(--border);
+
+    background:
+        rgba(168,85,247,.045);
+
+    text-align:center;
+
+    transition:
+        transform .2s,
+        background .2s;
+}
+
+.quiz-stat strong{
+    display:block;
+
+    font-size:14px;
+    font-weight:900;
+
+    line-height:1.2;
+}
+
+.quiz-stat span{
+    display:block;
+
+    margin-top:3px;
+
+    color:var(--muted);
+
+    font-size:8px;
+
+    line-height:1.4;
+}
+
+.quiz-stat small{
+    display:block;
+
+    margin-top:2px;
+
+    color:var(--muted);
+
+    font-size:7px;
+    font-weight:500;
+}
+
+.quiz-stat.correct{
+    color:var(--green);
+
+    background:
+        rgba(34,197,94,.075);
+
+    border-color:
+        rgba(34,197,94,.17);
+}
+
+.quiz-stat.wrong{
+    color:var(--red);
+
+    background:
+        rgba(239,68,68,.065);
+
+    border-color:
+        rgba(239,68,68,.16);
+}
+
+.quiz-stat.unanswered{
+    color:var(--yellow);
+
+    background:
+        rgba(234,179,8,.065);
+
+    border-color:
+        rgba(234,179,8,.16);
+}
+
+body.light .quiz-stat{
+    background:
+        rgba(126,34,206,.035);
+
+    border-color:
+        rgba(72,55,91,.14);
+}
+
+body.light .quiz-stat.correct{
+    color:#15803d;
+
+    background:
+        rgba(21,128,61,.075);
+
+    border-color:
+        rgba(21,128,61,.20);
+}
+
+body.light .quiz-stat.wrong{
+    color:#dc2626;
+
+    background:
+        rgba(220,38,38,.065);
+
+    border-color:
+        rgba(220,38,38,.19);
+}
+
+body.light .quiz-stat.unanswered{
+    color:#a16207;
+
+    background:
+        rgba(161,98,7,.065);
+
+    border-color:
+        rgba(161,98,7,.18);
+}
+
+body.light .quiz-stat span,
+body.light .quiz-stat small{
+    color:#625b69;
+}
+
+/* =====================================================
+FEEDBACK
+===================================================== */
+
+.answer-feedback{
+    margin-top:12px;
+
+    padding:13px;
+
+    border-radius:15px;
+
+    font-size:10px;
+    line-height:1.9;
+}
+
+.correct-feedback{
+    color:#86efac;
+
+    background:
+        rgba(34,197,94,.09);
+
+    border:
+        1px solid
+        rgba(34,197,94,.20);
+}
+
+.wrong-feedback{
+    color:#fca5a5;
+
+    background:
+        rgba(239,68,68,.09);
+
+    border:
+        1px solid
+        rgba(239,68,68,.20);
+}
+
+.answer-feedback strong{
+    font-weight:900;
+}
+
+body.light .correct-feedback{
+    color:#166534;
+
+    background:
+        rgba(21,128,61,.08);
+
+    border-color:
+        rgba(21,128,61,.20);
+}
+
+body.light .wrong-feedback{
+    color:#991b1b;
+
+    background:
+        rgba(220,38,38,.07);
+
+    border-color:
+        rgba(220,38,38,.19);
+}
+
+/* =====================================================
+ACTIONS
+===================================================== */
+
+.question-actions{
+    display:flex;
+    gap:8px;
+
+    margin-top:13px;
+}
+
+.copy-btn{
+    flex:1;
+    height:43px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:5px;
+
+    border-radius:14px;
+
+    color:var(--cyan);
+
+    background:
+        rgba(6,182,212,.09);
+
+    font-size:10px;
+    font-weight:700;
+}
+
+body.light .copy-btn{
+    color:#0369a1;
+
+    background:
+        rgba(3,105,161,.075);
+}
+
+.primary-btn{
+    width:100%;
+    height:50px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    border-radius:16px;
+
+    color:#fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--purple-dark)
+        );
+
+    font-size:12px;
+    font-weight:800;
+
+    box-shadow:
+        0 8px 20px
+        rgba(126,34,206,.20);
+}
+
+.secondary-btn{
+    width:100%;
+    height:48px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:8px;
+
+    border-radius:16px;
+
+    color:var(--purple);
+
+    background:
+        rgba(168,85,247,.09);
+
+    border:
+        1px solid
+        var(--border);
+
+    font-size:11px;
+    font-weight:700;
+}
+
+body.light .secondary-btn{
+    color:#6b21a8;
+
+    background:
+        rgba(126,34,206,.065);
+
+    border-color:
+        rgba(126,34,206,.17);
+}
+
+/* =====================================================
+COMMENTS
+===================================================== */
+
+.comments{
+    margin-top:12px;
+}
+
+.comment-toggle{
+    width:100%;
+    height:43px;
+
+    padding:
+        0
+        13px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    border-radius:14px;
+
+    background:
+        rgba(168,85,247,.06);
+
+    border:
+        1px solid
+        var(--border);
+
+    color:var(--muted);
+
+    font-size:10px;
+}
+
+.comment-toggle span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.comment-toggle svg{
+    width:17px;
+    height:17px;
+}
+
+.comments-body{
+    display:none;
+    margin-top:8px;
+}
+
+.comments-body.open{
+    display:block;
+}
+
+.comment-item{
+    margin-bottom:7px;
+
+    padding:10px;
+
+    border-radius:13px;
+
+    background:
+        rgba(168,85,247,.055);
+
+    border:
+        1px solid
+        var(--border);
+
+    color:var(--text);
+
+    font-size:10px;
+    line-height:1.9;
+}
+
+.comment-name{
+    margin-bottom:3px;
+
+    color:var(--purple);
+
+    font-weight:800;
+}
+
+.comment-form{
+    display:flex;
+    gap:6px;
+
+    margin-top:8px;
+}
+
+.comment-form input{
+    flex:1;
+    min-width:0;
+
+    height:42px;
+
+    padding:
+        0
+        11px;
+
+    outline:none;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:13px;
+
+    background:var(--card);
+    color:var(--text);
+
+    font-size:10px;
+
+    caret-color:var(--purple);
+}
+
+.comment-form input::placeholder{
+    color:var(--muted);
+    opacity:1;
+}
+
+.comment-form input:focus{
+    border-color:
+        rgba(126,34,206,.40);
+}
+
+.comment-form button{
+    width:45px;
+    height:42px;
+    min-width:45px;
+
+    padding:0;
+
+    border-radius:13px;
+
+    color:#fff;
+
+    background:var(--purple);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    place-items:center;
+
+    line-height:0;
+
+    flex:0 0 45px;
+}
+
+.comment-form button svg{
+    width:19px;
+    height:19px;
+
+    display:block;
+
+    margin:0;
+
+    flex:none;
+
+    stroke-width:2.2;
+}
+
+/* =====================================================
+EMPTY
+===================================================== */
+
+.empty{
+    padding:
+        40px
+        20px;
+
+    text-align:center;
+
+    border:
+        1px dashed
+        var(--border);
+
+    border-radius:22px;
+
+    background:var(--card);
+}
+
+.empty-icon{
+    width:58px;
+    height:58px;
+
+    margin:
+        0
+        auto
+        12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:20px;
+
+    color:var(--purple);
+
+    background:
+        rgba(168,85,247,.09);
+}
+
+.empty strong{
+    display:block;
+    color:var(--text);
+    font-size:13px;
+}
+
+.empty p{
+    margin-top:7px;
+
+    color:var(--muted);
+
+    font-size:10px;
+    line-height:1.9;
+}
+
+/* =====================================================
+RESULT
+===================================================== */
+
+.result-card{
+    padding:
+        25px
+        18px;
+
+    text-align:center;
+}
+
+.result-icon{
+    width:74px;
+    height:74px;
+
+    margin:
+        0
+        auto
+        13px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:25px;
+
+    color:var(--green);
+
+    background:
+        rgba(34,197,94,.12);
+}
+
+.result-card h2{
+    margin:0;
+
+    color:var(--text);
+
+    font-size:20px;
+}
+
+.result-card p{
+    color:var(--muted);
+    font-size:10px;
+}
+
+.result-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:8px;
+
+    margin:
+        18px
+        0;
+}
+
+.result-item{
+    padding:
+        12px
+        5px;
+
+    border-radius:15px;
+
+    background:
+        rgba(168,85,247,.06);
+
+    border:
+        1px solid
+        var(--border);
+}
+
+.result-item strong{
+    display:block;
+
+    color:var(--text);
+
+    font-size:18px;
+}
+
+.result-item span{
+    display:block;
+
+    margin-top:3px;
+
+    color:var(--muted);
+    font-size:9px;
+}
+
+.result-questions{
+    margin-top:14px;
+    text-align:right;
+}
+
+.result-question{
+    margin-bottom:8px;
+
+    padding:12px;
+
+    border-radius:15px;
+
+    background:
+        rgba(168,85,247,.05);
+
+    border:
+        1px solid
+        var(--border);
+
+    color:var(--text);
+
+    font-size:10px;
+    line-height:1.9;
+}
+
+.result-question-title{
+    color:var(--text);
+    font-weight:800;
+    margin-bottom:7px;
+}
+
+.result-correct{
+    color:#4ade80;
+    margin-top:4px;
+}
+
+.result-selected{
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.result-wrong{
+    color:#f87171;
+    margin-top:3px;
+}
+
+.result-unanswered{
+    color:#facc15;
+    margin-top:3px;
+}
+
+body.light .result-correct{
+    color:#15803d;
+}
+
+body.light .result-wrong{
+    color:#dc2626;
+}
+
+body.light .result-unanswered{
+    color:#a16207;
+}
+
+body.light .result-selected{
+    color:#5f586b;
+}
+
+/* =====================================================
+PROFILE
+===================================================== */
+
+.profile-head{
+    padding:21px;
+    text-align:center;
+}
+
+.avatar{
+    width:68px;
+    height:68px;
+
+    margin:
+        0
+        auto
+        12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:23px;
+
+    color:#fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    font-size:24px;
+    font-weight:900;
+}
+
+.profile-name{
+    color:var(--text);
+
+    font-size:17px;
+    font-weight:800;
+}
+
+.name-form{
+    display:flex;
+    gap:7px;
+
+    margin-top:15px;
+}
+
+.name-form input{
+    flex:1;
+    height:45px;
+    min-width:0;
+
+    padding:
+        0
+        12px;
+
+    outline:none;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:14px;
+
+    background:var(--bg-secondary);
+    color:var(--text);
+
+    font-size:11px;
+
+    caret-color:var(--purple);
+}
+
+.name-form input::placeholder{
+    color:var(--muted);
+    opacity:1;
+}
+
+.name-form input:focus{
+    border-color:
+        rgba(126,34,206,.40);
+}
+
+.name-form button{
+    width:75px;
+
+    border-radius:14px;
+
+    color:#fff;
+
+    background:var(--purple);
+
+    font-size:10px;
+    font-weight:700;
+}
+
+/* =====================================================
+AUTH CARD (name + password login/register)
+===================================================== */
+
+.profile-head.auth-mode{
+    position:relative;
+    overflow:hidden;
+    text-align:center;
+
+    background:
+        linear-gradient(
+            165deg,
+            rgba(168,85,247,.14),
+            rgba(6,182,212,.05) 55%,
+            transparent
+        ),
+        var(--card);
+
+    border:1px solid rgba(168,85,247,.28);
+}
+
+.profile-head.auth-mode::before{
+    content:"";
+    position:absolute;
+    top:-70px;
+    right:-50px;
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(168,85,247,.40),transparent 70%);
+    filter:blur(6px);
+    pointer-events:none;
+}
+
+.profile-head.auth-mode::after{
+    content:"";
+    position:absolute;
+    bottom:-60px;
+    left:-40px;
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(6,182,212,.28),transparent 70%);
+    filter:blur(10px);
+    pointer-events:none;
+}
+
+.avatar-pulse{
+    animation:avatarPulse 2.6s ease-out infinite;
+}
+
+@keyframes avatarPulse{
+    0%{box-shadow:0 0 0 0 rgba(168,85,247,.45);}
+    70%{box-shadow:0 0 0 16px rgba(168,85,247,0);}
+    100%{box-shadow:0 0 0 0 rgba(168,85,247,0);}
+}
+
+.auth-heading{
+    position:relative;
+    margin-bottom:16px;
+}
+
+.auth-heading strong{
+    display:block;
+    font-size:15.5px;
+    font-weight:800;
+    color:var(--text);
+}
+
+.auth-heading span{
+    display:block;
+    margin-top:5px;
+    font-size:10.5px;
+    color:var(--muted);
+    line-height:1.7;
+}
+
+.auth-fields{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:11px;
+}
+
+.auth-field{
+    position:relative;
+}
+
+.auth-field svg{
+    position:absolute;
+    top:50%;
+    right:15px;
+    transform:translateY(-50%);
+    width:16px;
+    height:16px;
+    color:var(--purple);
+    opacity:.9;
+    pointer-events:none;
+}
+
+.auth-field input{
+    width:100%;
+    height:50px;
+    min-width:0;
+    border-radius:15px;
+    border:1px solid rgba(168,85,247,.24);
+    background:rgba(8,6,18,.5);
+    color:var(--text);
+    font-size:13px;
+    padding:0 44px 0 16px;
+    outline:none;
+    box-sizing:border-box;
+    transition:border-color .2s,box-shadow .2s;
+}
+
+body.light .auth-field input{
+    background:rgba(255,255,255,.75);
+}
+
+.auth-field input::placeholder{
+    color:var(--muted);
+    opacity:1;
+}
+
+.auth-field input:focus{
+    border-color:var(--purple);
+    box-shadow:0 0 0 3px rgba(168,85,247,.18);
+}
+
+.auth-field .eye-btn{
+    position:absolute;
+    top:50%;
+    left:6px;
+    transform:translateY(-50%);
+    width:34px;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:none;
+    border:0;
+    color:var(--muted);
+    cursor:pointer;
+}
+
+.auth-field .eye-btn svg{
+    position:static;
+    transform:none;
+    width:15px;
+    height:15px;
+    color:var(--muted);
+    opacity:1;
+}
+
+.auth-submit{
+    width:100%;
+    height:52px;
+    margin-top:2px;
+    border-radius:16px;
+    border:0;
+    color:#fff;
+    font-size:13.5px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--purple-dark) 55%,
+            var(--cyan) 150%
+        );
+    box-shadow:0 12px 26px -10px rgba(168,85,247,.70);
+    transition:transform .15s,box-shadow .15s;
+}
+
+.auth-submit svg{
+    width:16px;
+    height:16px;
+}
+
+.auth-submit:active{
+    transform:scale(.97);
+    box-shadow:0 6px 16px -8px rgba(168,85,247,.55);
+}
+
+.auth-error{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:#f87171;
+    font-size:11px;
+    margin:3px 2px 2px;
+    text-align:right;
+}
+
+.auth-error svg{
+    width:13px;
+    height:13px;
+    flex-shrink:0;
+}
+
+.auth-hint{
+    display:flex;
+    align-items:flex-start;
+    gap:6px;
+    color:var(--muted);
+    font-size:10.5px;
+    margin:3px 2px 2px;
+    line-height:1.8;
+    text-align:right;
+}
+
+.auth-hint svg{
+    width:13px;
+    height:13px;
+    flex-shrink:0;
+    margin-top:2px;
+    color:var(--purple);
+}
+
+.auth-link{
+    margin-top:2px;
+    background:none;
+    border:0;
+    color:var(--muted);
+    font-size:11px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+}
+
+.auth-link:active{
+    color:var(--purple);
+}
+
+.profile-stats{
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:8px;
+
+    margin-top:12px;
+}
+
+.profile-stat{
+    padding:
+        14px
+        5px;
+
+    text-align:center;
+
+    border-radius:17px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+}
+
+.profile-stat strong{
+    display:block;
+
+    color:var(--text);
+
+    font-size:19px;
+}
+
+.profile-stat span{
+    display:block;
+
+    margin-top:4px;
+
+    color:var(--muted);
+    font-size:8px;
+}
+
+.profile-score-info{
+    margin-top:12px;
+
+    padding:
+        12px
+        14px;
+
+    text-align:center;
+
+    border-radius:17px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    color:var(--muted);
+
+    font-size:9px;
+    line-height:2;
+}
+
+.profile-score-info strong{
+    color:var(--text);
+    font-weight:800;
+}
+
+.support-entry{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:15px 16px;
+    cursor:pointer;
+    text-align:right;
+}
+
+.support-entry-left{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    min-width:0;
+}
+
+.support-entry-icon{
+    width:38px;
+    height:38px;
+    flex-shrink:0;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--purple-dark)
+        );
+}
+
+.support-entry-icon svg{
+    width:18px;
+    height:18px;
+}
+
+.support-entry-text{
+    min-width:0;
+    text-align:right;
+}
+
+.support-entry-text strong{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+}
+
+.support-entry-text span{
+    display:block;
+    margin-top:2px;
+    font-size:10px;
+    color:var(--muted);
+}
+
+.support-entry-arrow{
+    flex-shrink:0;
+    color:var(--muted);
+}
+
+.support-entry-arrow svg{
+    width:17px;
+    height:17px;
+}
+
+.msg-list{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+
+    max-height:55vh;
+    overflow-y:auto;
+
+    margin-bottom:14px;
+    padding:4px 2px;
+}
+
+.msg-bubble{
+    max-width:78%;
+    padding:10px 14px;
+    border-radius:16px;
+    font-size:12.5px;
+    line-height:1.85;
+}
+
+.msg-bubble.mine{
+    align-self:flex-end;
+    color:#fff;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--purple-dark)
+        );
+
+    border-bottom-left-radius:5px;
+
+    box-shadow:
+        0 6px 16px -8px
+        rgba(168,85,247,.55);
+}
+
+.msg-bubble.theirs{
+    align-self:flex-start;
+    color:var(--text);
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-bottom-right-radius:5px;
+}
+
+.msg-empty{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    padding:26px 10px;
+    line-height:1.9;
+}
+
+.developer-credit{
+    margin-top:9px;
+
+    text-align:center;
+
+    color:var(--muted);
+
+    opacity:.55;
+
+    font-size:8px;
+
+    letter-spacing:.3px;
+}
+
+/* =====================================================
+BOTTOM NAV
+===================================================== */
+
+.bottom-nav{
+    position:fixed;
+    z-index:60;
+
+    left:50%;
+    bottom:10px;
+
+    transform:
+        translateX(-50%);
+
+    width:
+        calc(100% - 24px);
+
+    max-width:496px;
+
+    height:66px;
+
+    padding:6px;
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:24px;
+
+    background:var(--card);
+
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+
+    box-shadow:var(--shadow);
+}
+
+.nav-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    gap:3px;
+
+    border-radius:18px;
+
+    background:none;
+
+    color:var(--muted);
+
+    font-size:9px;
+
+    transition:
+        color .2s,
+        background .2s;
+}
+
+.nav-btn svg{
+    width:20px;
+}
+
+.nav-btn.active{
+    color:var(--purple);
+
+    background:
+        rgba(168,85,247,.10);
+}
+
+body.light .nav-btn.active{
+    color:#6b21a8;
+
+    background:
+        rgba(126,34,206,.075);
+}
+
+/* =====================================================
+TOAST
+===================================================== */
+
+.toast{
+    position:fixed;
+    z-index:10000;
+
+    left:50%;
+    bottom:88px;
+
+    transform:
+        translateX(-50%)
+        translateY(20px);
+
+    width:max-content;
+    max-width:90%;
+
+    padding:
+        11px
+        15px;
+
+    border-radius:14px;
+
+    background:#171020;
+    color:#fff;
+
+    border:
+        1px solid
+        rgba(255,255,255,.10);
+
+    font-size:10px;
+
+    opacity:0;
+    pointer-events:none;
+
+    transition:.25s;
+}
+
+body.light .toast{
+    background:#2b2532;
+    color:#fff;
+}
+
+.toast.show{
+    opacity:1;
+
+    transform:
+        translateX(-50%)
+        translateY(0);
+}
+
+/* =====================================================
+EXIT MODAL
+===================================================== */
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+
+    z-index:9999;
+
+    display:none;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:20px;
+
+    background:
+        rgba(0,0,0,.62);
+
+    backdrop-filter:blur(7px);
+    -webkit-backdrop-filter:blur(7px);
+}
+
+.exit-modal{
+    width:100%;
+    max-width:340px;
+
+    padding:
+        22px
+        18px
+        17px;
+
+    border-radius:23px;
+
+    background:var(--card);
+
+    border:
+        1px solid
+        var(--border);
+
+    box-shadow:
+        0 20px 60px
+        rgba(0,0,0,.35);
+
+    text-align:center;
+
+    animation:
+        exitModalIn
+        .2s
+        ease;
+}
+
+@keyframes exitModalIn{
+
+    from{
+        opacity:0;
+
+        transform:
+            scale(.94)
+            translateY(8px);
+    }
+
+    to{
+        opacity:1;
+
+        transform:
+            scale(1)
+            translateY(0);
+    }
+
+}
+
+.exit-modal-icon{
+    width:48px;
+    height:48px;
+
+    margin:
+        0
+        auto
+        12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:16px;
+
+    color:#ef4444;
+
+    background:
+        rgba(239,68,68,.09);
+
+    border:
+        1px solid
+        rgba(239,68,68,.15);
+}
+
+.exit-modal-icon svg{
+    width:22px;
+    height:22px;
+}
+
+.exit-modal h3{
+    margin:0;
+
+    font-size:15px;
+    font-weight:900;
+
+    color:var(--text);
+}
+
+.exit-modal p{
+    margin:
+        9px
+        0
+        18px;
+
+    color:var(--muted);
+
+    font-size:10px;
+
+    line-height:2;
+}
+
+.exit-modal-actions{
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:8px;
+}
+
+.exit-modal-actions button{
+    height:43px;
+
+    border-radius:13px;
+
+    font-family:inherit;
+
+    font-size:10px;
+    font-weight:800;
+
+    cursor:pointer;
+
+    transition:
+        transform .15s,
+        opacity .2s;
+}
+
+.modal-cancel{
+    color:var(--text);
+
+    background:
+        rgba(255,255,255,.045);
+
+    border:
+        1px solid
+        var(--border);
+}
+
+.modal-confirm{
+    color:#fff;
+
+    background:#dc2626;
+
+    border:
+        1px solid
+        #dc2626;
+}
+
+.modal-confirm:active,
+.modal-cancel:active{
+    transform:scale(.97);
+}
+
+body.light .modal-overlay{
+    background:
+        rgba(20,15,30,.35);
+}
+
+body.light .exit-modal{
+    background:#ffffff;
+
+    border-color:
+        rgba(72,55,91,.18);
+}
+
+body.light .exit-modal p{
+    color:#5f586b;
+}
+
+body.light .modal-cancel{
+    color:#211b29;
+
+    background:#f5f2f7;
+
+    border-color:
+        rgba(72,55,91,.15);
+}
+
+/* =====================================================
+SEARCH RESULT INLINE FIXES
+===================================================== */
+
+.search-result-question{
+    color:var(--text);
+}
+
+.search-result-course{
+    color:var(--muted);
+}
+
+/* =====================================================
+SMALL DEVICES
+===================================================== */
+
+@media(max-width:390px){
+
+    .course-grid{
+        gap:9px;
+    }
+
+    .course-card{
+        min-height:155px;
+
+        padding:
+            13px
+            8px;
+    }
+
+    .course-icon{
+        width:57px;
+        height:57px;
+        min-width:57px;
+
+        margin-bottom:9px;
+    }
+
+    .course-icon svg{
+        width:30px;
+        height:30px;
+    }
+
+    .kidney-svg,
+    .lungs-svg{
+        width:38px!important;
+        height:38px!important;
+    }
+
+    .course-title{
+        font-size:12.5px;
+    }
+
+    .mode-card{
+        min-height:140px;
+
+        padding:
+            15px
+            8px;
+    }
+
+    .quiz-answer-stats{
+        gap:6px;
+    }
+
+    .quiz-stat{
+        min-height:54px;
+    }
+
+}
+
+/* =====================================================
+EXTRA LIGHT MODE READABILITY
+===================================================== */
+
+body.light .brand-title,
+body.light .page-title h1,
+body.light .semester-info strong,
+body.light .course-title,
+body.light .course-header-title,
+body.light .mode-card strong,
+body.light .question-text,
+body.light .option,
+body.light .option-text,
+body.light .profile-name,
+body.light .profile-stat strong,
+body.light .profile-score-info strong,
+body.light .result-card h2,
+body.light .result-item strong,
+body.light .result-question-title,
+body.light .comment-item,
+body.light .empty strong{
+    color:var(--text);
+}
+
+body.light .brand-sub,
+body.light .course-header-sub,
+body.light .progress-text,
+body.light .back-btn,
+body.light .comment-toggle,
+body.light .comment-item,
+body.light .result-card p,
+body.light .result-item span,
+body.light .result-selected,
+body.light .profile-stat span,
+body.light .profile-score-info,
+body.light .developer-credit,
+body.light .empty p{
+    color:var(--muted);
+}
+
+body.light .search-box input,
+body.light .comment-form input,
+body.light .name-form input{
+    color:var(--text);
+    background:#ffffff;
+}
+
+body.light .card,
+body.light .course-card,
+body.light .semester-card,
+body.light .mode-card,
+body.light .profile-stat,
+body.light .profile-score-info,
+body.light .bottom-nav{
+    background:#ffffff;
+}
+
+body.light .comment-item{
+    background:#f8f5fa;
+}
+
+body.light .comment-toggle{
+    background:#f7f3fa;
+}
+
+body.light .empty{
+    background:#ffffff;
+}
+
+body.light .result-question{
+    background:#f8f5fa;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- =====================================================
+HEADER
+===================================================== -->
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="logo">
+            <i data-lucide="stethoscope"></i>
+        </div>
+
+        <div class="brand-text">
+
+            <div class="brand-title">
+                Medib4
+            </div>
+
+            <div class="brand-sub">
+                نمونه سوالات پزشکی
+            </div>
+
+        </div>
+
+    </div>
+
+    <button
+        type="button"
+        class="theme-btn"
+        id="themeBtn"
+        onclick="toggleTheme()"
+    >
+        <i data-lucide="moon"></i>
+    </button>
+
+</header>
+
+<!-- =====================================================
+SEARCH
+===================================================== -->
+
+<div class="search-box">
+
+    <i
+        class="search-icon"
+        data-lucide="search"
+    ></i>
+
+    <input
+        id="searchInput"
+        type="text"
+        placeholder="جستجوی درس یا سوال..."
+        oninput="searchContent(this.value)"
+    >
+
+</div>
+
+<!-- =====================================================
+MAIN
+===================================================== -->
+
+<main id="main"></main>
+
+</div>
+
+<!-- =====================================================
+BOTTOM NAV
+===================================================== -->
+
+<nav class="bottom-nav">
+
+    <button
+        type="button"
+        class="nav-btn active"
+        id="navHome"
+        onclick="goHome()"
+    >
+
+        <i data-lucide="home"></i>
+
+        خانه
+
+    </button>
+
+    <button
+        type="button"
+        class="nav-btn"
+        id="navProfile"
+        onclick="showProfile()"
+    >
+
+        <i data-lucide="user-round"></i>
+
+        حساب
+
+    </button>
+
+</nav>
+
+<!-- =====================================================
+TOAST
+===================================================== -->
+
+<div
+    id="toast"
+    class="toast"
+></div>
+
+<!-- =====================================================
+CUSTOM EXIT MODAL
+===================================================== -->
+
+<div
+    id="exitModal"
+    class="modal-overlay"
+    onclick="handleExitOverlay(event)"
+>
+
+    <div
+        class="exit-modal"
+        onclick="event.stopPropagation()"
+    >
+
+        <div class="exit-modal-icon">
+
+            <i data-lucide="log-out"></i>
+
+        </div>
+
+        <h3>
+            خروج از آزمون
+        </h3>
+
+        <p>
+            با خروج از آزمون، پاسخ‌های فعلی این آزمون ذخیره نمی‌شوند.
+        </p>
+
+        <div class="exit-modal-actions">
+
+            <button
+                type="button"
+                class="modal-cancel"
+                onclick="closeExitModal()"
+            >
+
+                ادامه آزمون
+
+            </button>
+
+            <button
+                type="button"
+                class="modal-confirm"
+                onclick="confirmExitQuiz()"
+            >
+
+                خروج از آزمون
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+RECOVERY CODE MODAL
+===================================================== -->
+
+<div
+    id="recoveryCodeModal"
+    class="modal-overlay"
+>
+
+    <div
+        class="exit-modal"
+        onclick="event.stopPropagation()"
+    >
+
+        <div
+            class="exit-modal-icon"
+            style="
+                color:var(--purple);
+                background:rgba(168,85,247,.10);
+                border-color:rgba(168,85,247,.20);
+            "
+        >
+
+            <i data-lucide="key-round"></i>
+
+        </div>
+
+        <h3>
+            کد بازیابی رمزت
+        </h3>
+
+        <p>
+            اگه یه روز رمزت یادت رفت، با این کد و اسمت می‌تونی خودت رمز جدید بذاری.
+            یه جای امن (نه فقط همین گوشی) ذخیره‌ش کن.
+        </p>
+
+        <div
+            id="recoveryCodeText"
+            style="
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                gap:10px;
+                margin:0 0 18px;
+                padding:14px;
+                border-radius:14px;
+                background:var(--bg-secondary);
+                border:1px dashed var(--purple);
+                font-size:19px;
+                font-weight:900;
+                letter-spacing:2px;
+                color:var(--purple);
+                direction:ltr;
+            "
+        >
+
+        </div>
+
+        <div class="exit-modal-actions">
+
+            <button
+                type="button"
+                class="modal-cancel"
+                onclick="copyRecoveryCode()"
+            >
+
+                کپی کد
+
+            </button>
+
+            <button
+                type="button"
+                class="modal-confirm"
+                onclick="closeRecoveryCodeModal()"
+            >
+
+                ذخیره‌ش کردم
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =====================================================
+COURSES
+===================================================== */
+
+const API_BASE="https://medib4-worker.tmpl8uxxmvxq2d.workers.dev";
+
+let courses=[];
+
+let questionBanks={};
+
+let dataLoaded=false;
+
+let dataLoadError=false;
+
+async function loadAppData(){
+
+    try{
+
+        const [coursesRes,questionsRes]=
+            await Promise.all([
+                fetch(API_BASE+"/api/courses"),
+                fetch(API_BASE+"/api/questions")
+            ]);
+
+        if(!coursesRes.ok||!questionsRes.ok){
+
+            throw new Error("bad response");
+
+        }
+
+        courses=await coursesRes.json();
+
+        const allQuestions=
+            await questionsRes.json();
+
+        questionBanks={};
+
+        allQuestions.forEach(q=>{
+
+            if(!questionBanks[q.course_id]){
+
+                questionBanks[q.course_id]=[];
+
+            }
+
+            questionBanks[q.course_id].push({
+
+                id:q.id,
+
+                question:q.question,
+
+                options:q.options,
+
+                answer:q.answer,
+
+                explanation:q.explanation,
+
+                gender:q.gender
+
+            });
+
+        });
+
+        dataLoaded=true;
+
+        loadProgress();
+
+    }catch(err){
+
+        dataLoadError=true;
+
+    }
+
+    render();
+
+}
+
+/* =====================================================
+STATE
+===================================================== */
+
+let currentScreen="home";
+
+let currentCourse=null;
+
+let currentQuestions=[];
+
+const GENDER_SPLIT_COURSES=["islamic_thought_1","family_f"];
+
+let currentGender=null;
+
+let currentQuestionIndex=0;
+
+let selectedAnswers=[];
+
+let quizMode="normal";
+
+let timerInterval=null;
+
+let remainingSeconds=0;
+
+let quizFinished=false;
+
+let historyStack=[];
+
+let educationalScored=[];
+
+let openCommentQuestions=new Set();
+
+/* =====================================================
+STORAGE
+===================================================== */
+
+const STORAGE={
+
+    profile:"medib4_profile",
+
+    stats:"medib4_stats",
+
+    comments:"medib4_comments",
+
+    theme:"medib4_theme",
+
+    userId:"medib4_user_id",
+
+    userPassword:"medib4_user_password",
+
+    scoredQuestions:
+        "medib4_scored_questions"
+
+};
+
+/* =====================================================
+USER ID (device identity, used to sync stats/comments)
+===================================================== */
+
+function getUserId(){
+
+    let id=
+        localStorage.getItem(
+            STORAGE.userId
+        );
+
+    if(!id){
+
+        id=
+            (crypto.randomUUID)
+                ?crypto.randomUUID()
+                :(
+                    "u-"+
+                    Date.now()+
+                    "-"+
+                    Math.random()
+                        .toString(16)
+                        .slice(2)
+                );
+
+        localStorage.setItem(
+            STORAGE.userId,
+            id
+        );
+
+    }
+
+    return id;
+
+}
+
+function syncAnswerToServer(correct,questionId,courseId){
+
+    if(correct&&questionId&&courseId){
+
+        if(!progressCache[courseId]){
+
+            progressCache[courseId]=
+                new Set();
+
+        }
+
+        progressCache[courseId].add(
+            questionId
+        );
+
+    }
+
+    fetch(
+        API_BASE+
+        "/api/users/"+
+        encodeURIComponent(
+            getUserId()
+        )+
+        "/answer",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":
+                    "application/json"
+            },
+            body:JSON.stringify({
+                correct,
+                question_id:questionId,
+                course_id:courseId
+            })
+        }
+    ).catch(()=>{});
+
+}
+
+let progressCache={};
+
+async function loadProgress(){
+
+    try{
+
+        const res=
+            await fetch(
+                API_BASE+
+                "/api/users/"+
+                encodeURIComponent(
+                    getUserId()
+                )+
+                "/progress"
+            );
+
+        const rows=
+            await res.json();
+
+        const map={};
+
+        rows.forEach(r=>{
+
+            if(!map[r.course_id]){
+
+                map[r.course_id]=
+                    new Set();
+
+            }
+
+            map[r.course_id].add(
+                r.question_id
+            );
+
+        });
+
+        progressCache=map;
+
+    }catch{
+
+        progressCache={};
+
+    }
+
+}
+
+function getCourseProgress(courseId){
+
+    const bank=
+        questionBanks[courseId]||[];
+
+    const total=
+        bank.length;
+
+    if(!total)return null;
+
+    const done=
+        progressCache[courseId]
+
+        ?
+
+        progressCache[courseId].size
+
+        :
+
+        0;
+
+    return {
+        done:Math.min(done,total),
+        total
+    };
+
+}
+
+function getUserPassword(){
+
+    return (
+        localStorage.getItem(
+            STORAGE.userPassword
+        )||""
+    );
+
+}
+
+function setUserPassword(pw){
+
+    localStorage.setItem(
+        STORAGE.userPassword,
+        pw
+    );
+
+}
+
+/* =====================================================
+SCORED QUESTIONS
+===================================================== */
+
+function getScoredQuestions(){
+
+    try{
+
+        const data=
+            JSON.parse(
+                localStorage.getItem(
+                    STORAGE.scoredQuestions
+                )
+            );
+
+        return Array.isArray(data)
+            ?data
+            :[];
+
+    }catch{
+
+        return [];
+
+    }
+
+}
+
+function saveScoredQuestions(list){
+
+    localStorage.setItem(
+        STORAGE.scoredQuestions,
+        JSON.stringify(list)
+    );
+
+}
+
+function hasQuestionBeenScored(questionId){
+
+    return getScoredQuestions()
+        .includes(questionId);
+
+}
+
+function markQuestionAsScored(questionId){
+
+    const scored=
+        getScoredQuestions();
+
+    if(!scored.includes(questionId)){
+
+        scored.push(questionId);
+
+        saveScoredQuestions(scored);
+
+    }
+
+}
+
+/* =====================================================
+DATE
+===================================================== */
+
+function todayKey(){
+
+    const d=new Date();
+
+    return `${d.getFullYear()}-${String(
+        d.getMonth()+1
+    ).padStart(2,"0")}-${String(
+        d.getDate()
+    ).padStart(2,"0")}`;
+
+}
+
+/* =====================================================
+PROFILE
+===================================================== */
+
+function getProfile(){
+
+    try{
+
+        return JSON.parse(
+            localStorage.getItem(
+                STORAGE.profile
+            )
+        )||{name:""};
+
+    }catch{
+
+        return {name:""};
+
+    }
+
+}
+
+function saveProfile(profile){
+
+    localStorage.setItem(
+        STORAGE.profile,
+        JSON.stringify(profile)
+    );
+
+}
+
+/* =====================================================
+STATS
+===================================================== */
+
+function getStats(){
+
+    let stats=null;
+
+    try{
+
+        stats=JSON.parse(
+            localStorage.getItem(
+                STORAGE.stats
+            )
+        );
+
+    }catch{
+
+        stats=null;
+
+    }
+
+    if(
+        !stats ||
+        typeof stats!=="object"
+    ){
+
+        stats={
+            points:0,
+            correct:0,
+            wrong:0,
+            day:todayKey()
+        };
+
+        saveStats(stats);
+
+    }
+
+    if(
+        stats.day!==todayKey()
+    ){
+
+        stats.correct=0;
+
+        stats.wrong=0;
+
+        stats.day=todayKey();
+
+        saveStats(stats);
+
+    }
+
+    stats.points=
+        Number(stats.points)||0;
+
+    stats.correct=
+        Number(stats.correct)||0;
+
+    stats.wrong=
+        Number(stats.wrong)||0;
+
+    return stats;
+
+}
+
+function saveStats(stats){
+
+    localStorage.setItem(
+        STORAGE.stats,
+        JSON.stringify(stats)
+    );
+
+}
+
+setInterval(()=>{
+
+    getStats();
+
+},60000);
+
+/* =====================================================
+HELPERS
+===================================================== */
+
+function escapeHTML(text){
+
+    return String(text??"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+function showToast(message){
+
+    const toast=
+        document.getElementById(
+            "toast"
+        );
+
+    if(!toast)return;
+
+    toast.textContent=message;
+
+    toast.classList.add("show");
+
+    setTimeout(()=>{
+
+        toast.classList.remove(
+            "show"
+        );
+
+    },2200);
+
+}
+
+function refreshIcons(){
+
+    if(window.lucide){
+
+        lucide.createIcons();
+
+    }
+
+}
+
+/* =====================================================
+RANDOM
+===================================================== */
+
+function shuffle(array){
+
+    return [...array].sort(
+        ()=>Math.random()-.5
+    );
+
+}
+
+function getRandomQuestions(courseId){
+
+    let bank=
+        questionBanks[courseId]||[];
+
+    if(GENDER_SPLIT_COURSES.includes(courseId)){
+
+        bank=
+            bank.filter(
+                q=>q.gender===currentGender
+            );
+
+    }
+
+    if(!bank.length){
+
+        return [];
+
+    }
+
+    const amount=
+        Math.random()<.5
+        ?3
+        :4;
+
+    return shuffle(bank)
+        .slice(
+            0,
+            Math.min(
+                amount,
+                bank.length
+            )
+        )
+        .map(q=>{
+
+            const optionObjects=
+                q.options.map(
+                    (text,index)=>({
+
+                        text,
+
+                        originalIndex:index
+
+                    })
+                );
+
+            const shuffledOptions=
+                shuffle(
+                    optionObjects
+                );
+
+            const newAnswer=
+                shuffledOptions.findIndex(
+                    option=>
+                        option.originalIndex===
+                        q.answer
+                );
+
+            return {
+
+                ...q,
+
+                options:
+                    shuffledOptions.map(
+                        option=>option.text
+                    ),
+
+                answer:newAnswer
+
+            };
+
+        });
+
+}
+
+/* =====================================================
+KIDNEY SVG
+===================================================== */
+
+function kidneySVG(){
+
+    return `
+
+    <svg
+        class="kidney-svg"
+        viewBox="0 0 64 64"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+
+        <path
+            d="
+                M42 8
+                C31 5 20 9 15 18
+                C10 27 10 40 15 49
+                C19 56 26 59 32 56
+                C37 54 39 49 37 44
+                C36 40 32 37 32 33
+                C32 29 36 26 40 24
+                C45 21 49 17 48 13
+                C47 10 45 9 42 8
+                Z
+            "
+            stroke-width="3"
+        />
+
+        <path
+            d="
+                M33 27
+                C37 26 42 28 44 31
+                C45 34 43 37 39 37
+                C36 37 34 35 32 33
+            "
+            stroke-width="2.3"
+        />
+
+        <path
+            d="
+                M34 29
+                C37 31 39 32 41 33
+                C38 34 36 35 34 37
+            "
+            stroke-width="1.8"
+        />
+
+        <path
+            d="
+                M39 37
+                C40 42 40 49 39 58
+            "
+            stroke-width="2.5"
+        />
+
+        <path
+            d="
+                M33 28
+                C28 26 23 27 19 30
+
+                M33 31
+                C28 31 24 33 21 36
+            "
+            stroke-width="1.5"
+        />
+
+    </svg>
+
+    `;
+
+}
+
+/* =====================================================
+LUNGS SVG
+===================================================== */
+
+function lungsSVG(){
+
+    return `
+
+    <svg
+        class="lungs-svg"
+        viewBox="0 0 64 64"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+
+        <path
+            d="M32 5 V22"
+            stroke-width="3"
+        />
+
+        <path
+            d="M28 9 H36"
+            stroke-width="1.2"
+        />
+
+        <path
+            d="M28 13 H36"
+            stroke-width="1.2"
+        />
+
+        <path
+            d="M28 17 H36"
+            stroke-width="1.2"
+        />
+
+        <path
+            d="M28 21 H36"
+            stroke-width="1.2"
+        />
+
+        <path
+            d="
+                M32 21
+                C29 24 25 27 22 30
+
+                M32 21
+                C35 24 39 27 42 30
+            "
+            stroke-width="2.7"
+        />
+
+        <path
+            d="
+                M23 27
+                C17 27 12 34 10 42
+                C8 50 11 57 18 60
+                C24 62 29 58 31 53
+                C33 48 30 42 29 37
+                C28 32 27 29 23 27
+                Z
+            "
+            stroke-width="2.8"
+        />
+
+        <path
+            d="
+                M41 27
+                C47 27 52 34 54 42
+                C56 50 53 57 46 60
+                C40 62 35 58 33 53
+                C31 48 34 42 35 37
+                C36 32 37 29 41 27
+                Z
+            "
+            stroke-width="2.8"
+        />
+
+        <path
+            d="
+                M22 29
+                C19 33 17 36 16 40
+
+                M19 33
+                L14 35
+
+                M17 38
+                L13 42
+
+                M18 39
+                L22 44
+
+                M22 34
+                L25 39
+
+                M25 39
+                L27 45
+
+                M22 44
+                L19 50
+            "
+            stroke-width="1.35"
+        />
+
+        <path
+            d="
+                M42 29
+                C45 33 47 36 48 40
+
+                M45 33
+                L50 35
+
+                M47 38
+                L51 42
+
+                M46 39
+                L42 44
+
+                M42 34
+                L39 39
+
+                M39 39
+                L37 45
+
+                M42 44
+                L45 50
+            "
+            stroke-width="1.35"
+        />
+
+    </svg>
+
+    `;
+
+}
+
+/* =====================================================
+ICON
+===================================================== */
+
+function customCourseIcon(icon){
+
+    if(icon==="kidney"){
+
+        return kidneySVG();
+
+    }
+
+    if(icon==="lungs"){
+
+        return lungsSVG();
+
+    }
+
+    return `
+        <i data-lucide="${icon}"></i>
+    `;
+
+}
+
+/* =====================================================
+THEME
+===================================================== */
+
+function updateThemeButton(){
+
+    const btn=
+        document.getElementById(
+            "themeBtn"
+        );
+
+    if(!btn)return;
+
+    const isLight=
+        document.body.classList
+            .contains("light");
+
+    btn.innerHTML=
+        isLight
+        ?`<i data-lucide="sun"></i>`
+        :`<i data-lucide="moon"></i>`;
+
+    refreshIcons();
+
+}
+
+function toggleTheme(){
+
+    const isLight=
+        document.body.classList
+            .toggle("light");
+
+    localStorage.setItem(
+        STORAGE.theme,
+        isLight
+        ?"light"
+        :"dark"
+    );
+
+    updateThemeButton();
+
+}
+
+function loadTheme(){
+
+    if(
+        localStorage.getItem(
+            STORAGE.theme
+        )==="light"
+    ){
+
+        document.body.classList
+            .add("light");
+
+    }
+
+    updateThemeButton();
+
+}
+
+/* =====================================================
+NAVIGATION
+===================================================== */
+
+function setNav(active){
+
+    document
+        .querySelectorAll(".nav-btn")
+        .forEach(btn=>{
+
+            btn.classList.remove(
+                "active"
+            );
+
+        });
+
+    if(active==="home"){
+
+        document
+            .getElementById(
+                "navHome"
+            )
+            ?.classList
+            .add("active");
+
+    }
+
+    if(active==="profile"){
+
+        document
+            .getElementById(
+                "navProfile"
+            )
+            ?.classList
+            .add("active");
+
+    }
+
+}
+
+function navigate(screen,data=null){
+
+    if(currentScreen!==screen){
+
+        historyStack.push(
+            currentScreen
+        );
+
+    }
+
+    currentScreen=screen;
+
+    render(data);
+
+}
+
+function goBack(){
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+    }
+
+    const previous=
+        historyStack.pop();
+
+    if(previous){
+
+        currentScreen=previous;
+
+        render();
+
+    }else{
+
+        goHome();
+
+    }
+
+}
+
+function goHome(){
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+    }
+
+    historyStack=[];
+
+    currentScreen="home";
+
+    currentCourse=null;
+
+    const input=
+        document.getElementById(
+            "searchInput"
+        );
+
+    if(input){
+
+        input.value="";
+
+    }
+
+    render();
+
+    setNav("home");
+
+}
+
+function showProfile(){
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+    }
+
+    historyStack=[];
+
+    currentScreen="profile";
+
+    render();
+
+    setNav("profile");
+
+}
+
+/* =====================================================
+HOME
+===================================================== */
+
+function renderHome(){
+
+    return `
+
+    <section class="screen">
+
+        <div class="page-title">
+
+            <h1>
+                انتخاب ترم
+            </h1>
+
+        </div>
+
+        <div class="semester-grid">
+
+            <div
+                class="semester-card"
+                onclick="openSemester(2)"
+            >
+
+                <div class="semester-icon">
+
+                    <i
+                        data-lucide="graduation-cap"
+                    ></i>
+
+                </div>
+
+                <div class="semester-info">
+
+                    <strong>
+                        ترم ۲
+                    </strong>
+
+                </div>
+
+                <div class="semester-arrow">
+
+                    <i
+                        data-lucide="chevron-left"
+                    ></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+function openSemester(semester){
+
+    if(semester!==2)return;
+
+    navigate("courses");
+
+}
+
+/* =====================================================
+COURSES
+===================================================== */
+
+function renderCourses(){
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goBack()"
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت
+
+        </button>
+
+        <div class="page-title">
+
+            <h1>
+                درس‌های ترم ۲
+            </h1>
+
+        </div>
+
+        <div class="course-grid">
+
+            ${
+                courses
+                    .map(courseCard)
+                    .join("")
+            }
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+function courseCard(course){
+
+    const progress=
+        getCourseProgress(course.id);
+
+    const percent=
+        progress&&progress.total
+
+        ?
+
+        Math.round(
+            (progress.done/
+                progress.total)*100
+        )
+
+        :
+
+        0;
+
+    return `
+
+    <div
+        class="course-card"
+        onclick="openCourse('${course.id}')"
+    >
+
+        <div class="course-icon">
+
+            ${customCourseIcon(course.icon)}
+
+        </div>
+
+        <div class="course-title">
+
+            ${escapeHTML(course.title)}
+
+        </div>
+
+        ${
+            progress&&progress.total
+            ?`
+
+            <div class="course-progress-label">
+
+                ${progress.done} از ${progress.total} — ${percent}٪
+
+            </div>
+
+            `
+            :""
+        }
+
+        <div class="course-progress-track">
+
+            <div
+                class="course-progress-fill"
+                style="width:${percent}%;"
+            ></div>
+
+        </div>
+
+    </div>
+
+    `;
+
+}
+
+/* =====================================================
+COURSE PAGE
+===================================================== */
+
+function openCourse(courseId){
+
+    currentCourse=courseId;
+
+    if(GENDER_SPLIT_COURSES.includes(courseId)){
+
+        currentGender=null;
+
+        navigate("genderSelect");
+
+        return;
+
+    }
+
+    navigate("course");
+
+}
+
+function selectGender(g){
+
+    currentGender=g;
+
+    navigate("course");
+
+}
+
+function renderGenderSelect(){
+
+    const course=
+        courses.find(
+            c=>c.id===currentCourse
+        );
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goBack()"
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت
+
+        </button>
+
+        <div class="card course-header-card">
+
+            <div class="course-header-inner">
+
+                <div
+                    class="course-icon"
+                    style="
+                        margin:0;
+                        min-width:62px;
+                        width:62px;
+                        height:62px;
+                    "
+                >
+
+                    ${customCourseIcon(
+                        course?course.icon:""
+                    )}
+
+                </div>
+
+                <div>
+
+                    <div class="course-header-title">
+
+                        ${escapeHTML(
+                            course?course.title:""
+                        )}
+
+                    </div>
+
+                    <div class="course-header-sub">
+
+                        گروه خودتون رو انتخاب کنید
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mode-grid">
+
+            <div
+                class="mode-card"
+                onclick="selectGender('f')"
+            >
+
+                <div class="mode-icon">
+
+                    <i data-lucide="user-round"></i>
+
+                </div>
+
+                <strong>خواهران</strong>
+
+            </div>
+
+            <div
+                class="mode-card"
+                onclick="selectGender('m')"
+            >
+
+                <div class="mode-icon">
+
+                    <i data-lucide="user-round"></i>
+
+                </div>
+
+                <strong>برادران</strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+function renderCourse(){
+
+    const course=
+        courses.find(
+            c=>c.id===currentCourse
+        );
+
+    if(!course){
+
+        return renderCourses();
+
+    }
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goBack()"
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت
+
+        </button>
+
+        <div class="card course-header-card">
+
+            <div class="course-header-inner">
+
+                <div
+                    class="course-icon"
+                    style="
+                        margin:0;
+                        min-width:62px;
+                        width:62px;
+                        height:62px;
+                    "
+                >
+
+                    ${customCourseIcon(
+                        course.icon
+                    )}
+
+                </div>
+
+                <div>
+
+                    <div
+                        class="course-header-title"
+                    >
+
+                        ${escapeHTML(
+                            course.title
+                        )}
+
+                    </div>
+
+                    <div
+                        class="course-header-sub"
+                    >
+
+                        انتخاب نوع آزمون
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mode-grid">
+
+            <div
+                class="mode-card"
+                onclick="
+                    startExam(
+                        '${currentCourse}',
+                        'normal'
+                    )
+                "
+            >
+
+                <div class="mode-icon">
+
+                    <i
+                        data-lucide="graduation-cap"
+                    ></i>
+
+                </div>
+
+                <strong>
+                    نمونه سوال آموزشی
+                </strong>
+
+            </div>
+
+            <div
+                class="mode-card"
+                onclick="
+                    startExam(
+                        '${currentCourse}',
+                        'timed'
+                    )
+                "
+            >
+
+                <div class="mode-icon">
+
+                    <i
+                        data-lucide="timer"
+                    ></i>
+
+                </div>
+
+                <strong>
+                    نمونه سوال زمان‌دار
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+/* =====================================================
+SEARCH
+===================================================== */
+
+function searchContent(value){
+
+    value=
+        value
+        .trim()
+        .toLowerCase();
+
+    if(!value){
+
+        if(
+            currentScreen==="search"
+        ){
+
+            currentScreen="home";
+
+            render();
+
+        }
+
+        return;
+
+    }
+
+    const matchedCourses=
+        courses.filter(
+            course=>
+                course.title
+                    .toLowerCase()
+                    .includes(value)
+        );
+
+    const matchedQuestions=[];
+
+    courses.forEach(course=>{
+
+        (
+            questionBanks[course.id]||[]
+        ).forEach(q=>{
+
+            if(
+                q.question &&
+                q.question
+                    .toLowerCase()
+                    .includes(value)
+            ){
+
+                matchedQuestions.push({
+
+                    course,
+                    question:q
+
+                });
+
+            }
+
+        });
+
+    });
+
+    currentScreen="search";
+
+    document.getElementById(
+        "main"
+    ).innerHTML=`
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goHome()"
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت
+
+        </button>
+
+        <div class="page-title">
+
+            <h1>
+                نتایج جستجو
+            </h1>
+
+        </div>
+
+        ${
+            matchedCourses.length
+            ?
+            `
+
+            <div class="course-grid">
+
+                ${
+                    matchedCourses
+                        .map(courseCard)
+                        .join("")
+                }
+
+            </div>
+
+            `
+            :
+            ""
+        }
+
+        ${
+            matchedQuestions.length
+            ?
+            `
+
+            <div style="margin-top:12px">
+
+                ${
+                    matchedQuestions
+                    .map(item=>`
+
+                        <div
+                            class="card"
+                            onclick="
+                                openCourse(
+                                    '${item.course.id}'
+                                )
+                            "
+                            style="
+                                display:flex;
+                                align-items:center;
+                                gap:12px;
+                                padding:14px;
+                                margin-bottom:9px;
+                                cursor:pointer;
+                            "
+                        >
+
+                            <div
+                                class="course-icon"
+                                style="
+                                    width:55px;
+                                    height:55px;
+                                    min-width:55px;
+                                    margin:0;
+                                "
+                            >
+
+                                <i
+                                    data-lucide="file-question"
+                                ></i>
+
+                            </div>
+
+                            <div>
+
+                                <div
+                                    class="search-result-question"
+                                    style="
+                                        font-size:11px;
+                                        font-weight:700;
+                                        line-height:1.8;
+                                    "
+                                >
+
+                                    ${escapeHTML(
+                                        item.question.question
+                                    )}
+
+                                </div>
+
+                                <div
+                                    class="search-result-course"
+                                    style="
+                                        font-size:8px;
+                                        margin-top:4px;
+                                    "
+                                >
+
+                                    ${escapeHTML(
+                                        item.course.title
+                                    )}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    `)
+                    .join("")
+                }
+
+            </div>
+
+            `
+            :
+            ""
+        }
+
+        ${
+            !matchedCourses.length &&
+            !matchedQuestions.length
+            ?
+            `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+
+                    <i
+                        data-lucide="search-x"
+                    ></i>
+
+                </div>
+
+                <strong>
+                    چیزی پیدا نشد
+                </strong>
+
+            </div>
+
+            `
+            :
+            ""
+        }
+
+    </section>
+
+    `;
+
+    refreshIcons();
+
+}
+
+/* =====================================================
+START EXAM
+===================================================== */
+
+function startExam(courseId,mode){
+
+    let bank=
+        questionBanks[courseId]||[];
+
+    if(GENDER_SPLIT_COURSES.includes(courseId)){
+
+        bank=
+            bank.filter(
+                q=>q.gender===currentGender
+            );
+
+    }
+
+    if(bank.length<3){
+
+        showToast(
+            "برای این درس حداقل ۳ سؤال لازم است."
+        );
+
+        return;
+
+    }
+
+    currentCourse=courseId;
+
+    quizMode=mode;
+
+    currentQuestions=
+        getRandomQuestions(
+            courseId
+        );
+
+    selectedAnswers=
+        new Array(
+            currentQuestions.length
+        ).fill(null);
+
+    educationalScored=
+        new Array(
+            currentQuestions.length
+        ).fill(false);
+
+    currentQuestionIndex=0;
+
+    quizFinished=false;
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+    }
+
+    if(mode==="timed"){
+
+        remainingSeconds=
+            8*60;
+
+    }else{
+
+        remainingSeconds=0;
+
+    }
+
+    navigate("quiz");
+
+    if(mode==="timed"){
+
+        timerInterval=
+            setInterval(
+                updateTimer,
+                1000
+            );
+
+    }
+
+}
+
+/* =====================================================
+TIMER
+===================================================== */
+
+function updateTimer(){
+
+    if(currentScreen!=="quiz"){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+        return;
+
+    }
+
+    remainingSeconds--;
+
+    if(remainingSeconds<=0){
+
+        remainingSeconds=0;
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+        finishQuiz();
+
+        return;
+
+    }
+
+    const timer=
+        document.getElementById(
+            "timerValue"
+        );
+
+    if(timer){
+
+        timer.textContent=
+            formatTime(
+                remainingSeconds
+            );
+
+    }
+
+}
+
+function formatTime(seconds){
+
+    const min=
+        Math.floor(seconds/60)
+        .toString()
+        .padStart(2,"0");
+
+    const sec=
+        (seconds%60)
+        .toString()
+        .padStart(2,"0");
+
+    return `${min}:${sec}`;
+
+}
+
+/* =====================================================
+QUIZ ANSWER STATS
+===================================================== */
+
+function getQuizAnswerStats(){
+
+    const total=
+        currentQuestions.length;
+
+    let correct=0;
+
+    let wrong=0;
+
+    let unanswered=0;
+
+    currentQuestions.forEach(
+        (q,index)=>{
+
+            const selected=
+                selectedAnswers[index];
+
+            if(
+                selected===null ||
+                selected===undefined
+            ){
+
+                unanswered++;
+
+            }else if(
+                selected===q.answer
+            ){
+
+                correct++;
+
+            }else{
+
+                wrong++;
+
+            }
+
+        }
+    );
+
+    const percentage=
+        number=>{
+
+            if(!total)return 0;
+
+            return Math.round(
+                (number/total)*100
+            );
+
+        };
+
+    return {
+
+        correct,
+
+        wrong,
+
+        unanswered,
+
+        correctPercent:
+            percentage(correct),
+
+        wrongPercent:
+            percentage(wrong),
+
+        unansweredPercent:
+            percentage(unanswered)
+
+    };
+
+}
+
+/* =====================================================
+QUIZ
+===================================================== */
+
+function renderQuiz(){
+
+    const q=
+        currentQuestions[
+            currentQuestionIndex
+        ];
+
+    if(!q){
+
+        finishQuiz();
+
+        return "";
+
+    }
+
+    const total=
+        currentQuestions.length;
+
+    const selected=
+        selectedAnswers[
+            currentQuestionIndex
+        ];
+
+    const answered=
+        selected!==null &&
+        selected!==undefined;
+
+    const progress=
+        (
+            (currentQuestionIndex+1)/
+            total
+        )*100;
+
+    const educational=
+        quizMode==="normal";
+
+    const answerStats=
+        getQuizAnswerStats();
+
+    let feedbackHTML="";
+
+    if(
+        educational &&
+        answered
+    ){
+
+        const isCorrect=
+            selected===q.answer;
+
+        const correctLetter=[
+            "الف",
+            "ب",
+            "ج",
+            "د"
+        ][q.answer];
+
+        const alreadyScored=
+            hasQuestionBeenScored(
+                q.id
+            );
+
+        feedbackHTML=`
+
+        <div class="
+            answer-feedback
+            ${
+                isCorrect
+                ?"correct-feedback"
+                :"wrong-feedback"
+            }
+        ">
+
+            <strong>
+
+                ${
+                    isCorrect
+                    ?"✓ پاسخ شما صحیح است"
+                    :"✕ پاسخ شما غلط است"
+                }
+
+            </strong>
+
+            ${
+                alreadyScored
+
+                ?
+
+                `
+                <br>
+                این سؤال قبلاً برای شما امتیاز داشته است.
+                `
+
+                :
+
+                `
+                <br>
+                ${
+                    isCorrect
+                    ?"+۱۰ امتیاز"
+                    :"−۵ امتیاز"
+                }
+                `
+            }
+
+            ${
+                !isCorrect
+
+                ?
+
+                `
+                <br>
+                پاسخ صحیح:
+
+                <strong>
+                    ${correctLetter}
+                </strong>
+
+                -
+
+                ${escapeHTML(
+                    q.options[q.answer]
+                )}
+
+                `
+
+                :
+
+                ""
+            }
+
+            ${
+                q.explanation
+
+                ?
+
+                `
+                <div
+                    style="
+                        margin-top:5px;
+                        color:inherit;
+                    "
+                >
+
+                    ${escapeHTML(
+                        q.explanation
+                    )}
+
+                </div>
+                `
+
+                :
+
+                ""
+            }
+
+        </div>
+
+        `;
+
+    }
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="quiz-exit-btn"
+            onclick="exitQuiz()"
+        >
+
+            <i data-lucide="log-out"></i>
+
+            <span>
+                خروج از آزمون
+            </span>
+
+        </button>
+
+        <div class="quiz-header">
+
+            <div class="progress-text">
+
+                سوال
+                ${currentQuestionIndex+1}
+                از
+                ${total}
+
+            </div>
+
+            ${
+                quizMode==="timed"
+
+                ?
+
+                `
+
+                <div class="timer">
+
+                    <i
+                        data-lucide="timer"
+                    ></i>
+
+                    <span id="timerValue">
+
+                        ${formatTime(
+                            remainingSeconds
+                        )}
+
+                    </span>
+
+                </div>
+
+                `
+
+                :
+
+                `
+
+                <div
+                    style="
+                        color:var(--muted);
+                        font-size:9px;
+                    "
+                >
+
+                    آموزشی
+
+                </div>
+
+                `
+            }
+
+        </div>
+
+        <div class="progress-bar">
+
+            <div
+                class="progress-fill"
+                style="
+                    width:${progress}%
+                "
+            ></div>
+
+        </div>
+
+        <div
+            class="card question-card"
+        >
+
+            <div class="question-number">
+
+                سوال
+                ${currentQuestionIndex+1}
+
+            </div>
+
+            <div class="question-text">
+
+                ${escapeHTML(
+                    q.question
+                )}
+
+            </div>
+
+            ${
+                q.options
+                    .map(
+                        (option,index)=>{
+
+                            let classes=
+                                "option";
+
+                            if(
+                                educational &&
+                                answered
+                            ){
+
+                                if(
+                                    index===q.answer
+                                ){
+
+                                    classes+=
+                                        " correct";
+
+                                }
+
+                                if(
+                                    index===selected &&
+                                    index!==q.answer
+                                ){
+
+                                    classes+=
+                                        " wrong";
+
+                                }
+
+                                classes+=
+                                    " disabled";
+
+                            }else if(
+                                selected===index
+                            ){
+
+                                classes+=
+                                    " selected";
+
+                            }
+
+                            return `
+
+                            <button
+                                type="button"
+                                class="${classes}"
+
+                                ${
+                                    educational &&
+                                    answered
+                                    ?"disabled"
+                                    :""
+                                }
+
+                                onclick="
+                                    selectAnswer(
+                                        ${index}
+                                    )
+                                "
+                            >
+
+                                <span
+                                    class="option-letter"
+                                >
+
+                                    ${
+                                        [
+                                            "الف",
+                                            "ب",
+                                            "ج",
+                                            "د"
+                                        ][index]
+                                    }
+
+                                </span>
+
+                                <span
+                                    class="option-text"
+                                >
+
+                                    ${escapeHTML(
+                                        option
+                                    )}
+
+                                </span>
+
+                            </button>
+
+                            `;
+
+                        }
+                    )
+                    .join("")
+            }
+
+            <div class="quiz-answer-stats">
+
+                <div class="quiz-stat correct">
+
+                    <strong>
+                        ${answerStats.correct}
+                    </strong>
+
+                    <span>
+                        صحیح
+                    </span>
+
+                    <small>
+                        ${answerStats.correctPercent}٪
+                    </small>
+
+                </div>
+
+                <div class="quiz-stat wrong">
+
+                    <strong>
+                        ${answerStats.wrong}
+                    </strong>
+
+                    <span>
+                        غلط
+                    </span>
+
+                    <small>
+                        ${answerStats.wrongPercent}٪
+                    </small>
+
+                </div>
+
+                <div class="quiz-stat unanswered">
+
+                    <strong>
+                        ${answerStats.unanswered}
+                    </strong>
+
+                    <span>
+                        نزده
+                    </span>
+
+                    <small>
+                        ${answerStats.unansweredPercent}٪
+                    </small>
+
+                </div>
+
+            </div>
+
+            ${feedbackHTML}
+
+            <div class="question-actions">
+
+                <button
+                    type="button"
+                    class="copy-btn"
+                    onclick="copyQuestion()"
+                >
+
+                    <i
+                        data-lucide="copy"
+                    ></i>
+
+                    کپی سوال
+
+                </button>
+
+                ${
+                    currentQuestionIndex>0
+
+                    ?
+
+                    `
+
+                    <button
+                        type="button"
+                        class="copy-btn"
+                        onclick="previousQuestion()"
+                    >
+
+                        <i
+                            data-lucide="arrow-right"
+                        ></i>
+
+                        قبلی
+
+                    </button>
+
+                    `
+
+                    :
+
+                    ""
+                }
+
+            </div>
+
+            <div style="margin-top:9px">
+
+                ${
+                    currentQuestionIndex<
+                    total-1
+
+                    ?
+
+                    `
+
+                    <button
+                        type="button"
+                        class="primary-btn"
+                        onclick="nextQuestion()"
+                    >
+
+                        سوال بعدی
+
+                        <i
+                            data-lucide="arrow-left"
+                        ></i>
+
+                    </button>
+
+                    `
+
+                    :
+
+                    `
+
+                    <button
+                        type="button"
+                        class="primary-btn"
+                        onclick="finishQuiz()"
+                    >
+
+                        پایان آزمون
+
+                        <i
+                            data-lucide="check"
+                        ></i>
+
+                    </button>
+
+                    `
+                }
+
+            </div>
+
+            <div class="comments">
+
+                <button
+                    type="button"
+                    class="comment-toggle"
+                    onclick="
+                        toggleComments(
+                            '${q.id}'
+                        )
+                    "
+                >
+
+                    <span>
+
+                        <i
+                            data-lucide="message-circle"
+                        ></i>
+
+                        نظرات و توضیحات
+
+                    </span>
+
+                    <i
+                        data-lucide="chevron-down"
+                    ></i>
+
+                </button>
+
+                <div
+                    class="
+                        comments-body
+                        ${
+                            openCommentQuestions.has(q.id)
+                            ?"open"
+                            :""
+                        }
+                    "
+                    id="comments-${q.id}"
+                >
+
+                    ${renderComments(q.id)}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+/* =====================================================
+ANSWERS
+===================================================== */
+
+function selectAnswer(index){
+
+    if(quizFinished)return;
+
+    const q=
+        currentQuestions[
+            currentQuestionIndex
+        ];
+
+    if(!q)return;
+
+    if(
+        quizMode==="normal" &&
+        selectedAnswers[
+            currentQuestionIndex
+        ]!==null
+    ){
+
+        return;
+
+    }
+
+    selectedAnswers[
+        currentQuestionIndex
+    ]=index;
+
+    if(
+        quizMode==="normal" &&
+        !educationalScored[
+            currentQuestionIndex
+        ]
+    ){
+
+        const alreadyScored=
+            hasQuestionBeenScored(
+                q.id
+            );
+
+        if(!alreadyScored){
+
+            const stats=getStats();
+
+            if(index===q.answer){
+
+                stats.points+=10;
+
+                stats.correct++;
+
+                syncAnswerToServer(
+                    true,
+                    q.id,
+                    currentCourse
+                );
+
+            }else{
+
+                stats.points-=5;
+
+                stats.wrong++;
+
+                syncAnswerToServer(
+                    false,
+                    q.id,
+                    currentCourse
+                );
+
+            }
+
+            stats.day=todayKey();
+
+            saveStats(stats);
+
+            markQuestionAsScored(
+                q.id
+            );
+
+        }
+
+        educationalScored[
+            currentQuestionIndex
+        ]=true;
+
+    }
+
+    render();
+
+}
+
+function nextQuestion(){
+
+    if(
+        currentQuestionIndex<
+        currentQuestions.length-1
+    ){
+
+        currentQuestionIndex++;
+
+        render();
+
+    }
+
+}
+
+function previousQuestion(){
+
+    if(currentQuestionIndex>0){
+
+        currentQuestionIndex--;
+
+        render();
+
+    }
+
+}
+
+/* =====================================================
+COPY
+===================================================== */
+
+function copyQuestion(){
+
+    const q=
+        currentQuestions[
+            currentQuestionIndex
+        ];
+
+    if(!q)return;
+
+    const letters=[
+        "الف",
+        "ب",
+        "ج",
+        "د"
+    ];
+
+    const text=
+`${q.question}
+
+${letters[0]}) ${q.options[0]}
+
+${letters[1]}) ${q.options[1]}
+
+${letters[2]}) ${q.options[2]}
+
+${letters[3]}) ${q.options[3]}`;
+
+    if(
+        navigator.clipboard &&
+        navigator.clipboard.writeText
+    ){
+
+        navigator.clipboard
+            .writeText(text)
+            .then(()=>{
+
+                showToast(
+                    "سوال و ۴ گزینه کپی شد."
+                );
+
+            })
+            .catch(()=>{
+
+                fallbackCopy(text);
+
+            });
+
+    }else{
+
+        fallbackCopy(text);
+
+    }
+
+}
+
+function fallbackCopy(text){
+
+    const textarea=
+        document.createElement(
+            "textarea"
+        );
+
+    textarea.value=text;
+
+    textarea.style.position="fixed";
+
+    textarea.style.opacity="0";
+
+    document.body.appendChild(
+        textarea
+    );
+
+    textarea.select();
+
+    try{
+
+        document.execCommand(
+            "copy"
+        );
+
+        showToast(
+            "سوال و ۴ گزینه کپی شد."
+        );
+
+    }catch{
+
+        showToast(
+            "کپی انجام نشد."
+        );
+
+    }
+
+    textarea.remove();
+
+}
+
+/* =====================================================
+FINISH
+===================================================== */
+
+function finishQuiz(){
+
+    if(quizFinished)return;
+
+    quizFinished=true;
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+    }
+
+    let correct=0;
+
+    let wrong=0;
+
+    let unanswered=0;
+
+    const details=[];
+
+    currentQuestions.forEach(
+        (q,index)=>{
+
+            const selected=
+                selectedAnswers[index];
+
+            if(
+                selected===null ||
+                selected===undefined
+            ){
+
+                unanswered++;
+
+            }else if(
+                selected===q.answer
+            ){
+
+                correct++;
+
+            }else{
+
+                wrong++;
+
+            }
+
+            details.push({
+
+                question:q.question,
+
+                options:q.options,
+
+                correct:q.answer,
+
+                selected,
+
+                explanation:
+                    q.explanation||""
+
+            });
+
+        }
+    );
+
+    if(
+        quizMode==="timed"
+    ){
+
+        const stats=getStats();
+
+        currentQuestions.forEach(
+            (q,index)=>{
+
+                const selected=
+                    selectedAnswers[index];
+
+                if(
+                    selected===null ||
+                    selected===undefined
+                ){
+
+                    return;
+
+                }
+
+                if(
+                    hasQuestionBeenScored(
+                        q.id
+                    )
+                ){
+
+                    return;
+
+                }
+
+                if(
+                    selected===q.answer
+                ){
+
+                    stats.points+=10;
+
+                    stats.correct++;
+
+                    syncAnswerToServer(
+                        true,
+                        q.id,
+                        currentCourse
+                    );
+
+                }else{
+
+                    stats.points-=5;
+
+                    stats.wrong++;
+
+                    syncAnswerToServer(
+                        false,
+                        q.id,
+                        currentCourse
+                    );
+
+                }
+
+                markQuestionAsScored(
+                    q.id
+                );
+
+            }
+        );
+
+        stats.day=todayKey();
+
+        saveStats(stats);
+
+    }
+
+    window.quizResult={
+
+        total:
+            currentQuestions.length,
+
+        correct,
+
+        wrong,
+
+        unanswered,
+
+        details,
+
+        mode:quizMode
+
+    };
+
+    currentScreen="result";
+
+    render();
+
+}
+
+/* =====================================================
+RESULT
+===================================================== */
+
+function renderResult(){
+
+    const result=
+        window.quizResult||{
+
+            total:0,
+
+            correct:0,
+
+            wrong:0,
+
+            unanswered:0,
+
+            details:[],
+
+            mode:"normal"
+
+        };
+
+    const course=
+        courses.find(
+            c=>c.id===currentCourse
+        );
+
+    const percent=
+        result.total
+
+        ?
+
+        Math.round(
+            result.correct/
+            result.total*
+            100
+        )
+
+        :
+
+        0;
+
+    const score=
+        (result.correct*10)-
+        (result.wrong*5);
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="
+                openCourse(
+                    '${currentCourse}'
+                )
+            "
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت به درس
+
+        </button>
+
+        <div class="card result-card">
+
+            <div class="result-icon">
+
+                <i
+                    data-lucide="check-circle"
+                ></i>
+
+            </div>
+
+            <h2>
+                آزمون تمام شد 🎉
+            </h2>
+
+            <p>
+
+                ${escapeHTML(
+                    course?.title||""
+                )}
+
+            </p>
+
+            <div
+                style="
+                    font-size:32px;
+                    font-weight:900;
+                    color:var(--purple);
+                    margin:12px 0;
+                "
+            >
+
+                ${percent}٪
+
+            </div>
+
+            <div
+                style="
+                    color:var(--muted);
+                    font-size:10px;
+                "
+            >
+
+                امتیاز این آزمون:
+
+                <strong
+                    style="
+                        color:
+                        ${
+                            score>=0
+                            ?"var(--green)"
+                            :"var(--red)"
+                        };
+                    "
+                >
+
+                    ${score}
+
+                </strong>
+
+            </div>
+
+            <div class="result-grid">
+
+                <div class="result-item">
+
+                    <strong>
+                        ${result.correct}
+                    </strong>
+
+                    <span>
+                        صحیح
+                    </span>
+
+                </div>
+
+                <div class="result-item">
+
+                    <strong>
+                        ${result.wrong}
+                    </strong>
+
+                    <span>
+                        غلط
+                    </span>
+
+                </div>
+
+                <div class="result-item">
+
+                    <strong>
+                        ${result.unanswered}
+                    </strong>
+
+                    <span>
+                        بی‌پاسخ
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="result-questions">
+
+                ${
+                    result.details
+                    .map(
+                        (item,index)=>{
+
+                            let selectedText=
+                                "بدون پاسخ";
+
+                            let selectedClass=
+                                "result-unanswered";
+
+                            if(
+                                item.selected!==null &&
+                                item.selected!==undefined
+                            ){
+
+                                selectedText=
+                                    item.options[
+                                        item.selected
+                                    ];
+
+                                selectedClass=
+                                    item.selected===
+                                    item.correct
+
+                                    ?
+
+                                    "result-correct"
+
+                                    :
+
+                                    "result-wrong";
+
+                            }
+
+                            return `
+
+                            <div
+                                class="result-question"
+                            >
+
+                                <div
+                                    class="
+                                        result-question-title
+                                    "
+                                >
+
+                                    ${index+1}.
+
+                                    ${escapeHTML(
+                                        item.question
+                                    )}
+
+                                </div>
+
+                                <div
+                                    class="result-correct"
+                                >
+
+                                    پاسخ صحیح:
+
+                                    ${
+                                        [
+                                            "الف",
+                                            "ب",
+                                            "ج",
+                                            "د"
+                                        ][item.correct]
+                                    }
+
+                                    -
+
+                                    ${escapeHTML(
+                                        item.options[
+                                            item.correct
+                                        ]
+                                    )}
+
+                                </div>
+
+                                <div
+                                    class="${selectedClass}"
+                                >
+
+                                    ${
+                                        item.selected===null ||
+                                        item.selected===undefined
+
+                                        ?
+
+                                        "پاسخ شما: بدون پاسخ"
+
+                                        :
+
+                                        `
+
+                                        پاسخ شما:
+
+                                        ${
+                                            [
+                                                "الف",
+                                                "ب",
+                                                "ج",
+                                                "د"
+                                            ][item.selected]
+                                        }
+
+                                        -
+
+                                        ${escapeHTML(
+                                            selectedText
+                                        )}
+
+                                        `
+                                    }
+
+                                </div>
+
+                                ${
+                                    item.explanation
+
+                                    ?
+
+                                    `
+
+                                    <div
+                                        style="
+                                            margin-top:5px;
+                                            color:var(--muted);
+                                        "
+                                    >
+
+                                        توضیح:
+
+                                        ${escapeHTML(
+                                            item.explanation
+                                        )}
+
+                                    </div>
+
+                                    `
+
+                                    :
+
+                                    ""
+                                }
+
+                            </div>
+
+                            `;
+
+                        }
+                    )
+                    .join("")
+                }
+
+            </div>
+
+            <button
+                type="button"
+                class="primary-btn"
+                onclick="
+                    startExam(
+                        '${currentCourse}',
+                        '${result.mode||"normal"}'
+                    )
+                "
+            >
+
+                آزمون دوباره
+
+                <i
+                    data-lucide="rotate-ccw"
+                ></i>
+
+            </button>
+
+            <button
+                type="button"
+                class="secondary-btn"
+                onclick="
+                    openCourse(
+                        '${currentCourse}'
+                    )
+                "
+                style="margin-top:9px;"
+            >
+
+                بازگشت به درس
+
+                <i
+                    data-lucide="arrow-left"
+                ></i>
+
+            </button>
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+/* =====================================================
+PROFILE
+===================================================== */
+
+let profileNameEditing=false;
+
+let profileMenuOpen=false;
+
+let authFormError="";
+
+let showForgotPassword=false;
+
+let forgotFormError="";
+
+function renderProfile(){
+
+    const profile=
+        getProfile();
+
+    const stats=
+        getStats();
+
+    const hasPassword=
+        !!getUserPassword();
+
+    const firstLetter=
+        profile.name
+
+        ?
+
+        profile.name
+            .trim()
+            .charAt(0)
+
+        :
+
+        "؟";
+
+    return `
+
+    <section class="screen">
+
+        <div class="page-title">
+
+            <h1>
+                حساب کاربری
+            </h1>
+
+        </div>
+
+        <div class="card profile-head${!hasPassword?' auth-mode':''}">
+
+            <div class="avatar${!hasPassword?' avatar-pulse':''}">
+
+                ${escapeHTML(
+                    firstLetter
+                )}
+
+            </div>
+
+            ${
+                !hasPassword
+                ?(
+                    showForgotPassword
+                    ?renderForgotPasswordForm()
+                    :renderAuthForm(profile)
+                )
+                :profileNameEditing
+                ?renderRenameForm(profile)
+                :`
+
+                <div
+                    style="
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        gap:6px;
+                        position:relative;
+                    "
+                >
+
+                    <div class="profile-name">
+
+                        ${escapeHTML(
+                            profile.name
+                        )}
+
+                    </div>
+
+                    <button
+                        type="button"
+                        onclick="toggleProfileMenu()"
+                        style="
+                            background:none;
+                            border:0;
+                            color:var(--muted);
+                            padding:4px;
+                            cursor:pointer;
+                        "
+                        aria-label="گزینه‌های نام"
+                    >
+
+                        <i data-lucide="more-vertical"></i>
+
+                    </button>
+
+                    ${
+                        profileMenuOpen
+                        ?`
+
+                        <div
+                            style="
+                                position:absolute;
+                                top:100%;
+                                left:50%;
+                                transform:translateX(-50%);
+                                background:var(--bg-elevated,#1a1428);
+                                border:1px solid var(--border);
+                                border-radius:12px;
+                                box-shadow:0 8px 24px rgba(0,0,0,.35);
+                                padding:6px;
+                                display:flex;
+                                flex-direction:column;
+                                gap:2px;
+                                z-index:20;
+                                min-width:140px;
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                onclick="startRename()"
+                                style="
+                                    background:none;
+                                    border:0;
+                                    color:var(--text);
+                                    padding:8px 10px;
+                                    text-align:center;
+                                    border-radius:8px;
+                                    cursor:pointer;
+                                    font-size:12px;
+                                "
+                            >
+
+                                ویرایش نام
+
+                            </button>
+
+                            <button
+                                type="button"
+                                onclick="logoutAccount()"
+                                style="
+                                    background:none;
+                                    border:0;
+                                    color:#ef4444;
+                                    padding:8px 10px;
+                                    text-align:center;
+                                    border-radius:8px;
+                                    cursor:pointer;
+                                    font-size:12px;
+                                "
+                            >
+
+                                خروج از حساب
+
+                            </button>
+
+                        </div>
+
+                        `
+                        :""
+                    }
+
+                </div>
+
+                `
+            }
+
+        </div>
+
+        <div class="profile-stats">
+
+            <div class="profile-stat">
+
+                <strong>
+                    ${stats.points}
+                </strong>
+
+                <span>
+                    امتیاز کل
+                </span>
+
+            </div>
+
+            <div class="profile-stat">
+
+                <strong>
+                    ${stats.correct}
+                </strong>
+
+                <span>
+                    پاسخ صحیح امروز
+                </span>
+
+            </div>
+
+            <div class="profile-stat">
+
+                <strong>
+                    ${stats.wrong}
+                </strong>
+
+                <span>
+                    پاسخ غلط امروز
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="profile-score-info">
+
+            <div>
+
+                هر پاسخ درست:
+
+                <strong>
+                    +۱۰ امتیاز
+                </strong>
+
+            </div>
+
+            <div>
+
+                هر پاسخ غلط:
+
+                <strong>
+                    −۵ امتیاز
+                </strong>
+
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="card support-entry"
+            onclick="openMessages()"
+        >
+
+            <span class="support-entry-left">
+
+                <span class="support-entry-icon">
+
+                    <i data-lucide="message-circle"></i>
+
+                </span>
+
+                <span class="support-entry-text">
+
+                    <strong>
+                        پیام به پشتیبانی
+                    </strong>
+
+                    <span>
+                        سوال یا مشکلی داری؟ مستقیم بنویس
+                    </span>
+
+                </span>
+
+            </span>
+
+            <span class="support-entry-arrow">
+
+                <i data-lucide="chevron-left"></i>
+
+            </span>
+
+        </button>
+
+        <div class="developer-credit">
+
+            Developed by Farid
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+let authPasswordVisible=false;
+
+function renderAuthForm(profile){
+
+    return `
+
+    <div class="auth-heading">
+
+        <strong>
+            به Medib4 خوش اومدی
+        </strong>
+
+        <span>
+            با یه نام و رمز عبور، امتیاز و پیشرفتت همیشه محفوظ می‌مونه
+        </span>
+
+    </div>
+
+    <div class="auth-fields">
+
+        <div class="auth-field">
+
+            <input
+                id="authNameInput"
+                type="text"
+                placeholder="نام شما"
+                value="${escapeHTML(profile.name||"")}"
+                autocomplete="off"
+            >
+
+            <i data-lucide="user-round"></i>
+
+        </div>
+
+        <div class="auth-field">
+
+            <input
+                id="authPasswordInput"
+                type="${
+                    authPasswordVisible
+                    ?"text"
+                    :"password"
+                }"
+                placeholder="رمز عبور (حداقل ۶ کاراکتر)"
+                autocomplete="off"
+                onkeydown="if(event.key==='Enter')handleAuthSubmit()"
+            >
+
+            <i data-lucide="lock"></i>
+
+            <button
+                type="button"
+                class="eye-btn"
+                onclick="toggleAuthPasswordVisibility()"
+                aria-label="نمایش رمز عبور"
+            >
+
+                <i data-lucide="${
+                    authPasswordVisible
+                    ?"eye-off"
+                    :"eye"
+                }"></i>
+
+            </button>
+
+        </div>
+
+        ${
+            authFormError
+            ?`
+
+            <div class="auth-error">
+
+                <i data-lucide="alert-circle"></i>
+
+                <span>${escapeHTML(authFormError)}</span>
+
+            </div>
+
+            `
+            :`
+
+            <div class="auth-hint">
+
+                <i data-lucide="sparkles"></i>
+
+                <span>این نام و رمز، حساب تو رو می‌سازه؛ اگه قبلاً ساختی بودی، همینجا واردش می‌شی.</span>
+
+            </div>
+
+            `
+        }
+
+        <button
+            type="button"
+            class="auth-submit"
+            onclick="handleAuthSubmit()"
+        >
+
+            <i data-lucide="log-in"></i>
+
+            <span>ورود / ثبت‌نام</span>
+
+        </button>
+
+        <button
+            type="button"
+            class="auth-link"
+            onclick="toggleForgotPassword(true)"
+        >
+
+            رمزت رو فراموش کردی؟
+
+        </button>
+
+    </div>
+
+    `;
+
+}
+
+function toggleAuthPasswordVisibility(){
+
+    authPasswordVisible=
+        !authPasswordVisible;
+
+    const input=
+        document.getElementById(
+            "authPasswordInput"
+        );
+
+    const currentValue=
+        input
+        ?input.value
+        :"";
+
+    render();
+
+    requestAnimationFrame(
+        ()=>{
+
+            const newInput=
+                document.getElementById(
+                    "authPasswordInput"
+                );
+
+            if(newInput){
+
+                newInput.value=
+                    currentValue;
+
+                newInput.focus();
+
+                newInput.setSelectionRange(
+                    currentValue.length,
+                    currentValue.length
+                );
+
+            }
+
+        }
+    );
+
+}
+
+function toggleForgotPassword(show){
+
+    showForgotPassword=show;
+
+    forgotFormError="";
+
+    render();
+
+}
+
+function renderForgotPasswordForm(){
+
+    return `
+
+    <div class="auth-heading">
+
+        <strong>
+            بازیابی رمز عبور
+        </strong>
+
+        <span>
+            اسم و کد بازیابی‌ای که موقع ساخت حساب بهت دادیم رو وارد کن
+        </span>
+
+    </div>
+
+    <div class="auth-fields">
+
+        <div class="auth-field">
+
+            <input
+                id="forgotNameInput"
+                type="text"
+                placeholder="نام شما"
+                autocomplete="off"
+            >
+
+            <i data-lucide="user-round"></i>
+
+        </div>
+
+        <div class="auth-field">
+
+            <input
+                id="forgotCodeInput"
+                type="text"
+                placeholder="کد بازیابی (مثل ABCD-1234)"
+                autocomplete="off"
+                style="direction:ltr;text-align:center;letter-spacing:1px;"
+            >
+
+            <i data-lucide="key-round"></i>
+
+        </div>
+
+        <div class="auth-field">
+
+            <input
+                id="forgotNewPasswordInput"
+                type="password"
+                placeholder="رمز جدید (حداقل ۶ کاراکتر)"
+                autocomplete="off"
+                onkeydown="if(event.key==='Enter')handleForgotPasswordSubmit()"
+            >
+
+            <i data-lucide="lock"></i>
+
+        </div>
+
+        ${
+            forgotFormError
+            ?`
+
+            <div class="auth-error">
+
+                <i data-lucide="alert-circle"></i>
+
+                <span>${escapeHTML(forgotFormError)}</span>
+
+            </div>
+
+            `
+            :`
+
+            <div class="auth-hint">
+
+                <i data-lucide="info"></i>
+
+                <span>کد رو گم کردی؟ از همون «پیام به پشتیبانی» به ما بگو تا کمکت کنیم.</span>
+
+            </div>
+
+            `
+        }
+
+        <button
+            type="button"
+            class="auth-submit"
+            onclick="handleForgotPasswordSubmit()"
+        >
+
+            <i data-lucide="refresh-ccw"></i>
+
+            <span>ساخت رمز جدید</span>
+
+        </button>
+
+        <button
+            type="button"
+            class="auth-link"
+            onclick="toggleForgotPassword(false)"
+        >
+
+            بازگشت به ورود
+
+        </button>
+
+    </div>
+
+    `;
+
+}
+
+async function handleForgotPasswordSubmit(){
+
+    const nameInput=
+        document.getElementById(
+            "forgotNameInput"
+        );
+
+    const codeInput=
+        document.getElementById(
+            "forgotCodeInput"
+        );
+
+    const pwInput=
+        document.getElementById(
+            "forgotNewPasswordInput"
+        );
+
+    if(
+        !nameInput||
+        !codeInput||
+        !pwInput
+    )return;
+
+    const name=
+        nameInput.value.trim();
+
+    const recoveryCode=
+        codeInput.value.trim();
+
+    const newPassword=
+        pwInput.value;
+
+    if(
+        !name||
+        !recoveryCode||
+        newPassword.length<6
+    ){
+
+        forgotFormError=
+            "همه فیلدها رو کامل پر کن (رمز جدید حداقل ۶ کاراکتر).";
+
+        render();
+
+        return;
+
+    }
+
+    try{
+
+        const res=
+            await fetch(
+                API_BASE+
+                "/api/forgot-password",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        name,
+                        recovery_code:
+                            recoveryCode,
+                        new_password:
+                            newPassword
+                    })
+                }
+            );
+
+        const data=
+            await res.json()
+                .catch(()=>({}));
+
+        if(!res.ok){
+
+            forgotFormError=
+                data.error||
+                "بازیابی رمز ناموفق بود.";
+
+            render();
+
+            return;
+
+        }
+
+        localStorage.setItem(
+            STORAGE.userId,
+            data.user_id
+        );
+
+        setUserPassword(
+            newPassword
+        );
+
+        saveProfile({name});
+
+        showForgotPassword=false;
+
+        forgotFormError="";
+
+        render();
+
+        if(data.recovery_code){
+
+            showRecoveryCodeModal(
+                data.recovery_code
+            );
+
+        }
+
+    }catch{
+
+        forgotFormError=
+            "خطا در ارتباط با سرور.";
+
+        render();
+
+    }
+
+}
+
+function renderRenameForm(profile){
+
+    return `
+
+    <div class="name-form">
+
+        <input
+            id="renameInput"
+            type="text"
+            placeholder="نام جدید..."
+            value="${escapeHTML(profile.name||"")}"
+        >
+
+        <button
+            type="button"
+            onclick="saveRenamedName()"
+        >
+
+            ذخیره
+
+        </button>
+
+    </div>
+
+    `;
+
+}
+
+function toggleProfileMenu(){
+
+    profileMenuOpen=
+        !profileMenuOpen;
+
+    render();
+
+}
+
+function startRename(){
+
+    profileMenuOpen=false;
+
+    profileNameEditing=true;
+
+    render();
+
+}
+
+async function handleAuthSubmit(){
+
+    const nameInput=
+        document.getElementById(
+            "authNameInput"
+        );
+
+    const pwInput=
+        document.getElementById(
+            "authPasswordInput"
+        );
+
+    if(!nameInput||!pwInput)return;
+
+    const name=
+        nameInput.value.trim();
+
+    const password=
+        pwInput.value;
+
+    if(!name||password.length<6){
+
+        authFormError=
+            "نام و رمز عبور (حداقل ۶ کاراکتر) رو وارد کن.";
+
+        render();
+
+        return;
+
+    }
+
+    authFormError="";
+
+    try{
+
+        const loginRes=
+            await fetch(
+                API_BASE+"/api/login",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        name,
+                        password
+                    })
+                }
+            );
+
+        if(loginRes.ok){
+
+            const data=
+                await loginRes.json();
+
+            localStorage.setItem(
+                STORAGE.userId,
+                data.user_id
+            );
+
+            setUserPassword(
+                password
+            );
+
+            saveProfile({name});
+
+            showToast(
+                "خوش اومدی!"
+            );
+
+            render();
+
+            return;
+
+        }
+
+        if(loginRes.status!==404){
+
+            const errData=
+                await loginRes.json()
+                    .catch(()=>({}));
+
+            authFormError=
+                errData.error||
+                "ورود ناموفق بود.";
+
+            render();
+
+            return;
+
+        }
+
+        const regRes=
+            await fetch(
+                API_BASE+"/api/register",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        id:getUserId(),
+                        name,
+                        password
+                    })
+                }
+            );
+
+        const regData=
+            await regRes.json()
+                .catch(()=>({}));
+
+        if(!regRes.ok){
+
+            authFormError=
+                regData.error||
+                "ثبت‌نام ناموفق بود.";
+
+            render();
+
+            return;
+
+        }
+
+        localStorage.setItem(
+            STORAGE.userId,
+            regData.user_id
+        );
+
+        setUserPassword(password);
+
+        saveProfile({name});
+
+        render();
+
+        if(regData.recovery_code){
+
+            showRecoveryCodeModal(
+                regData.recovery_code
+            );
+
+        }else{
+
+            showToast(
+                "حساب ساخته شد."
+            );
+
+        }
+
+    }catch{
+
+        authFormError=
+            "خطا در ارتباط با سرور.";
+
+        render();
+
+    }
+
+}
+
+async function saveRenamedName(){
+
+    const input=
+        document.getElementById(
+            "renameInput"
+        );
+
+    if(!input)return;
+
+    const name=
+        input.value.trim();
+
+    if(!name){
+
+        showToast(
+            "لطفاً نام خود را وارد کنید."
+        );
+
+        return;
+
+    }
+
+    try{
+
+        const res=
+            await fetch(
+                API_BASE+
+                "/api/users/"+
+                encodeURIComponent(
+                    getUserId()
+                )+
+                "/rename",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        name,
+                        password:
+                            getUserPassword()
+                    })
+                }
+            );
+
+        const data=
+            await res.json()
+                .catch(()=>({}));
+
+        if(!res.ok){
+
+            showToast(
+                data.error||
+                "ویرایش نام ناموفق بود."
+            );
+
+            return;
+
+        }
+
+        saveProfile({name});
+
+        profileNameEditing=false;
+
+        showToast(
+            "نام ذخیره شد."
+        );
+
+        render();
+
+    }catch{
+
+        showToast(
+            "خطا در ارتباط با سرور."
+        );
+
+    }
+
+}
+
+function logoutAccount(){
+
+    if(
+        !confirm(
+            "از این حساب خارج بشی؟ دیگه روی این گوشی وارد نمی‌مونی."
+        )
+    )return;
+
+    localStorage.removeItem(
+        STORAGE.userId
+    );
+
+    localStorage.removeItem(
+        STORAGE.userPassword
+    );
+
+    localStorage.removeItem(
+        STORAGE.profile
+    );
+
+    profileMenuOpen=false;
+
+    profileNameEditing=false;
+
+    authFormError="";
+
+    render();
+
+}
+
+/* =====================================================
+MESSAGES (direct chat with admin)
+===================================================== */
+
+let messagesCache=null;
+
+function openMessages(){
+
+    messagesCache=null;
+
+    navigate("messages");
+
+    loadMessages();
+
+}
+
+async function loadMessages(){
+
+    try{
+
+        const res=
+            await fetch(
+                API_BASE+
+                "/api/messages?user_id="+
+                encodeURIComponent(
+                    getUserId()
+                )
+            );
+
+        messagesCache=
+            await res.json();
+
+    }catch{
+
+        messagesCache=[];
+
+    }
+
+    if(currentScreen==="messages"){
+
+        render();
+
+        const box=
+            document.getElementById(
+                "messagesBox"
+            );
+
+        if(box){
+
+            box.scrollTop=
+                box.scrollHeight;
+
+        }
+
+    }
+
+}
+
+function renderMessages(){
+
+    if(messagesCache===null){
+
+        return `
+
+        <section class="screen">
+
+            <button
+                type="button"
+                class="back-btn"
+                onclick="goBack()"
+            >
+
+                <i data-lucide="arrow-right"></i>
+
+                بازگشت
+
+            </button>
+
+            <div
+                style="
+                    text-align:center;
+                    color:var(--muted);
+                    padding:30px 0;
+                "
+            >
+
+                در حال بارگذاری...
+
+            </div>
+
+        </section>
+
+        `;
+
+    }
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goBack()"
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت
+
+        </button>
+
+        <div class="page-title">
+
+            <h1>
+                پیام به پشتیبانی
+            </h1>
+
+        </div>
+
+        <div
+            id="messagesBox"
+            class="msg-list"
+        >
+
+            ${
+                messagesCache.length
+                ?messagesCache.map(
+                    m=>`
+
+                    <div
+                        class="msg-bubble ${
+                            m.sender==="admin"
+                            ?"theirs"
+                            :"mine"
+                        }"
+                    >
+
+                        ${escapeHTML(m.text)}
+
+                    </div>
+
+                    `
+                ).join("")
+                :`
+
+                <div class="msg-empty">
+
+                    هنوز پیامی رد و بدل نشده.
+                    <br>
+                    سوال یا مشکلی داری بنویس.
+
+                </div>
+
+                `
+            }
+
+        </div>
+
+        <div class="comment-form">
+
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="پیام خود را بنویسید..."
+            >
+
+            <button
+                type="button"
+                class="comment-send-btn"
+                onclick="sendUserMessage()"
+                aria-label="ارسال پیام"
+            >
+
+                <i data-lucide="send"></i>
+
+            </button>
+
+        </div>
+
+    </section>
+
+    `;
+
+}
+
+async function sendUserMessage(){
+
+    const input=
+        document.getElementById(
+            "messageInput"
+        );
+
+    if(!input)return;
+
+    const text=
+        input.value.trim();
+
+    if(!text)return;
+
+    input.disabled=true;
+
+    try{
+
+        await fetch(
+            API_BASE+"/api/messages",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+                    user_id:getUserId(),
+                    text
+                })
+            }
+        );
+
+        input.value="";
+
+        await loadMessages();
+
+    }catch{
+
+        showToast(
+            "ارسال پیام ناموفق بود."
+        );
+
+    }
+
+    input.disabled=false;
+
+}
+
+let commentsCache={};
+
+async function fetchComments(questionId){
+
+    try{
+
+        const res=
+            await fetch(
+                API_BASE+
+                "/api/comments?question="+
+                encodeURIComponent(questionId)
+            );
+
+        commentsCache[questionId]=
+            await res.json();
+
+    }catch{
+
+        commentsCache[questionId]=[];
+
+    }
+
+    updateCommentsBody(questionId);
+
+}
+
+function updateCommentsBody(questionId){
+
+    const body=
+        document.getElementById(
+            `comments-${questionId}`
+        );
+
+    if(!body)return;
+
+    body.innerHTML=
+        renderComments(questionId);
+
+    refreshIcons();
+
+}
+
+function renderComments(questionId){
+
+    const comments=
+        commentsCache[questionId];
+
+    if(comments===undefined){
+
+        fetchComments(questionId);
+
+        return `
+
+        <div
+            style="
+                color:var(--muted);
+                font-size:9px;
+                text-align:center;
+                padding:8px;
+            "
+        >
+
+            در حال بارگذاری نظرات...
+
+        </div>
+
+        `;
+
+    }
+
+    let html="";
+
+    if(!comments.length){
+
+        html+=`
+
+        <div
+            style="
+                color:var(--muted);
+                font-size:9px;
+                text-align:center;
+                padding:8px;
+            "
+        >
+
+            هنوز نظری ثبت نشده است.
+
+        </div>
+
+        `;
+
+    }else{
+
+        comments.forEach(
+            comment=>{
+
+                const isMine=
+                    comment.user_id&&
+                    comment.user_id===
+                        getUserId();
+
+                html+=`
+
+                <div class="comment-item">
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:space-between;
+                            gap:8px;
+                        "
+                    >
+
+                        <div class="comment-name">
+
+                            ${
+                                escapeHTML(
+                                    comment.name||
+                                    "کاربر"
+                                )
+                            }
+
+                        </div>
+
+                        ${
+                            isMine
+                            ?`
+                            <div
+                                style="
+                                    display:flex;
+                                    gap:4px;
+                                    flex-shrink:0;
+                                "
+                            >
+
+                                <button
+                                    type="button"
+                                    onclick="editComment('${questionId}',${comment.id})"
+                                    style="
+                                        background:none;
+                                        border:0;
+                                        color:var(--muted);
+                                        padding:2px;
+                                        cursor:pointer;
+                                    "
+                                    aria-label="ویرایش نظر"
+                                >
+
+                                    <i
+                                        data-lucide="pencil"
+                                        style="width:12px;height:12px;"
+                                    ></i>
+
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onclick="deleteComment('${questionId}',${comment.id})"
+                                    style="
+                                        background:none;
+                                        border:0;
+                                        color:var(--muted);
+                                        padding:2px;
+                                        cursor:pointer;
+                                    "
+                                    aria-label="حذف نظر"
+                                >
+
+                                    <i
+                                        data-lucide="trash-2"
+                                        style="width:12px;height:12px;"
+                                    ></i>
+
+                                </button>
+
+                            </div>
+                            `
+                            :""
+                        }
+
+                    </div>
+
+                    <div>
+
+                        ${escapeHTML(
+                            comment.text
+                        )}
+
+                    </div>
+
+                </div>
+
+                `;
+
+            }
+        );
+
+    }
+
+    html+=`
+
+    <div class="comment-form">
+
+        <input
+            id="commentInput-${questionId}"
+            type="text"
+            placeholder="نظر یا توضیح..."
+        >
+
+        <button
+            type="button"
+            class="comment-send-btn"
+            onclick="
+                addComment(
+                    '${questionId}'
+                )
+            "
+            aria-label="ارسال نظر"
+        >
+
+            <i data-lucide="send"></i>
+
+        </button>
+
+    </div>
+
+    `;
+
+    return html;
+
+}
+
+function toggleComments(questionId){
+
+    const body=
+        document.getElementById(
+            `comments-${questionId}`
+        );
+
+    if(!body)return;
+
+    body.classList.toggle(
+        "open"
+    );
+
+    if(
+        body.classList.contains("open")
+    ){
+
+        openCommentQuestions.add(
+            questionId
+        );
+
+    }else{
+
+        openCommentQuestions.delete(
+            questionId
+        );
+
+    }
+
+    refreshIcons();
+
+}
+
+async function editComment(questionId,commentId){
+
+    const comments=
+        commentsCache[questionId]||[];
+
+    const comment=
+        comments.find(
+            c=>c.id===commentId
+        );
+
+    if(!comment)return;
+
+    const newText=
+        prompt(
+            "ویرایش نظر:",
+            comment.text
+        );
+
+    if(
+        newText===null||
+        !newText.trim()
+    )return;
+
+    try{
+
+        await fetch(
+            API_BASE+
+            "/api/comments/"+
+            commentId,
+            {
+                method:"PUT",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+                    user_id:getUserId(),
+                    text:newText.trim()
+                })
+            }
+        );
+
+        delete commentsCache[
+            questionId
+        ];
+
+        await fetchComments(
+            questionId
+        );
+
+    }catch{
+
+        showToast(
+            "ویرایش نظر ناموفق بود."
+        );
+
+    }
+
+}
+
+async function deleteComment(questionId,commentId){
+
+    if(
+        !confirm(
+            "این نظر حذف بشه؟"
+        )
+    )return;
+
+    try{
+
+        await fetch(
+            API_BASE+
+            "/api/comments/"+
+            commentId+
+            "?user_id="+
+            encodeURIComponent(
+                getUserId()
+            ),
+            {
+                method:"DELETE"
+            }
+        );
+
+        delete commentsCache[
+            questionId
+        ];
+
+        await fetchComments(
+            questionId
+        );
+
+    }catch{
+
+        showToast(
+            "حذف نظر ناموفق بود."
+        );
+
+    }
+
+}
+
+async function addComment(questionId){
+
+    const input=
+        document.getElementById(
+            `commentInput-${questionId}`
+        );
+
+    if(!input)return;
+
+    const text=
+        input.value.trim();
+
+    if(!text){
+
+        showToast(
+            "متن نظر را وارد کنید."
+        );
+
+        return;
+
+    }
+
+    input.disabled=true;
+
+    try{
+
+        await fetch(
+            API_BASE+"/api/comments",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+                    question_id:questionId,
+                    user_id:getUserId(),
+                    name:
+                        getProfile().name||
+                        "کاربر",
+                    text
+                })
+            }
+        );
+
+        input.value="";
+
+        delete commentsCache[
+            questionId
+        ];
+
+        openCommentQuestions.add(
+            questionId
+        );
+
+        await fetchComments(
+            questionId
+        );
+
+        showToast(
+            "نظر ثبت شد."
+        );
+
+    }catch{
+
+        showToast(
+            "ارسال نظر ناموفق بود."
+        );
+
+    }
+
+    input.disabled=false;
+
+}
+
+/* =====================================================
+CUSTOM EXIT MODAL
+===================================================== */
+
+function openExitModal(){
+
+    if(currentScreen!=="quiz"){
+
+        return;
+
+    }
+
+    const modal=
+        document.getElementById(
+            "exitModal"
+        );
+
+    if(!modal)return;
+
+    modal.style.display="flex";
+
+    refreshIcons();
+
+}
+
+function closeExitModal(){
+
+    const modal=
+        document.getElementById(
+            "exitModal"
+        );
+
+    if(!modal)return;
+
+    modal.style.display="none";
+
+}
+
+let lastRecoveryCode="";
+
+function showRecoveryCodeModal(code){
+
+    lastRecoveryCode=code;
+
+    const textEl=
+        document.getElementById(
+            "recoveryCodeText"
+        );
+
+    if(textEl){
+
+        textEl.textContent=code;
+
+    }
+
+    const modal=
+        document.getElementById(
+            "recoveryCodeModal"
+        );
+
+    if(modal){
+
+        modal.style.display="flex";
+
+    }
+
+}
+
+function closeRecoveryCodeModal(){
+
+    const modal=
+        document.getElementById(
+            "recoveryCodeModal"
+        );
+
+    if(!modal)return;
+
+    modal.style.display="none";
+
+}
+
+function copyRecoveryCode(){
+
+    if(!lastRecoveryCode)return;
+
+    if(
+        navigator.clipboard&&
+        navigator.clipboard.writeText
+    ){
+
+        navigator.clipboard
+            .writeText(
+                lastRecoveryCode
+            )
+            .then(()=>{
+
+                showToast(
+                    "کد کپی شد."
+                );
+
+            })
+            .catch(()=>{
+
+                showToast(
+                    "کپی نشد، خودت یادداشتش کن."
+                );
+
+            });
+
+    }else{
+
+        showToast(
+            "کپی نشد، خودت یادداشتش کن."
+        );
+
+    }
+
+}
+
+function handleExitOverlay(event){
+
+    if(
+        event.target &&
+        event.target.id==="exitModal"
+    ){
+
+        closeExitModal();
+
+    }
+
+}
+
+function exitQuiz(){
+
+    openExitModal();
+
+}
+
+function confirmExitQuiz(){
+
+    closeExitModal();
+
+    if(timerInterval){
+
+        clearInterval(
+            timerInterval
+        );
+
+        timerInterval=null;
+
+    }
+
+    quizFinished=true;
+
+    currentQuestions=[];
+
+    selectedAnswers=[];
+
+    educationalScored=[];
+
+    currentQuestionIndex=0;
+
+    remainingSeconds=0;
+
+    window.quizResult=null;
+
+    currentScreen="course";
+
+    render();
+
+}
+
+/* =====================================================
+MAIN RENDER
+===================================================== */
+
+function renderDataLoading(){
+
+    return `
+
+    <div
+        style="
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            min-height:70vh;
+            gap:14px;
+            color:var(--muted);
+            text-align:center;
+        "
+    >
+
+        <i
+            data-lucide="loader-circle"
+            style="
+                width:36px;
+                height:36px;
+                color:var(--purple);
+                animation:spin 1s linear infinite;
+            "
+        ></i>
+
+        <div>در حال بارگذاری اطلاعات...</div>
+
+    </div>
+
+    <style>
+    @keyframes spin{
+        from{transform:rotate(0deg);}
+        to{transform:rotate(360deg);}
+    }
+    </style>
+
+    `;
+
+}
+
+function renderDataError(){
+
+    return `
+
+    <div
+        style="
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            min-height:70vh;
+            gap:14px;
+            color:var(--muted);
+            text-align:center;
+            padding:20px;
+        "
+    >
+
+        <i
+            data-lucide="wifi-off"
+            style="
+                width:36px;
+                height:36px;
+                color:var(--red);
+            "
+        ></i>
+
+        <div>ارتباط با سرور برقرار نشد.</div>
+
+        <button
+            class="theme-btn"
+            style="width:auto;padding:10px 18px;border-radius:14px;"
+            onclick="loadAppData()"
+        >
+            تلاش مجدد
+        </button>
+
+    </div>
+
+    `;
+
+}
+
+function render(){
+
+    const main=
+        document.getElementById(
+            "main"
+        );
+
+    if(!main)return;
+
+    if(!dataLoaded){
+
+        main.innerHTML=
+            dataLoadError
+                ?renderDataError()
+                :renderDataLoading();
+
+        return;
+
+    }
+
+    switch(currentScreen){
+
+        case "home":
+
+            main.innerHTML=
+                renderHome();
+
+            setNav("home");
+
+            break;
+
+        case "courses":
+
+            main.innerHTML=
+                renderCourses();
+
+            setNav("home");
+
+            break;
+
+        case "genderSelect":
+
+            main.innerHTML=
+                renderGenderSelect();
+
+            setNav("home");
+
+            break;
+
+        case "course":
+
+            main.innerHTML=
+                renderCourse();
+
+            setNav("home");
+
+            break;
+
+        case "quiz":
+
+            main.innerHTML=
+                renderQuiz();
+
+            setNav("home");
+
+            break;
+
+        case "result":
+
+            main.innerHTML=
+                renderResult();
+
+            setNav("home");
+
+            break;
+
+        case "profile":
+
+            main.innerHTML=
+                renderProfile();
+
+            setNav("profile");
+
+            break;
+
+        case "messages":
+
+            main.innerHTML=
+                renderMessages();
+
+            setNav("profile");
+
+            break;
+
+        case "search":
+
+            setNav("home");
+
+            break;
+
+        default:
+
+            currentScreen="home";
+
+            main.innerHTML=
+                renderHome();
+
+            setNav("home");
+
+    }
+
+    refreshIcons();
+
+}
+
+/* =====================================================
+INITIALIZE
+===================================================== */
+
+loadTheme();
+
+getStats();
+
+getScoredQuestions();
+
+render();
+
+loadAppData();
+
+</script>
+
+</body>
+</html>
