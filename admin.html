@@ -303,6 +303,7 @@ function renderApp() {
     { id: "questions", label: "بانک سوالات" },
     { id: "comments", label: "نظرات" },
     { id: "stats", label: "آمار سوالات" },
+    { id: "reports", label: "گزارش‌ها" },
     { id: "users", label: "کاربران" },
     { id: "messages", label: "پیام‌ها" },
   ];
@@ -337,6 +338,7 @@ async function renderTabContent() {
     else if (currentTab === "questions") await renderQuestionsTab(el);
     else if (currentTab === "comments") await renderCommentsTab(el);
     else if (currentTab === "stats") await renderStatsTab(el);
+    else if (currentTab === "reports") await renderReportsTab(el);
     else if (currentTab === "users") await renderUsersTab(el);
     else if (currentTab === "messages") await renderMessagesTab(el);
     else if (currentTab === "settings") await renderSettingsTab(el);
@@ -583,6 +585,55 @@ async function renderStatsTab(el) {
       }).join("") : `<div class="empty">هنوز کسی سوالی جواب نداده.</div>`}
     </div>
   `;
+}
+
+/* =====================================================
+REPORTS TAB (question reports + user/comment reports)
+===================================================== */
+async function renderReportsTab(el) {
+  const reports = await api("/api/admin/reports");
+  const questionReports = reports.filter(r => r.type === "question");
+  const userReports = reports.filter(r => r.type === "user");
+  el.innerHTML = `
+    <div class="card">
+      <h3>گزارش سوالات (${questionReports.length})</h3>
+      ${questionReports.length ? questionReports.map(r => `
+        <div class="item">
+          <div class="item-main">
+            <div class="item-title">${escapeHTML(r.target_label || r.target_id)}</div>
+            <div class="item-sub">گزارش‌دهنده: ${escapeHTML(r.reporter_name || "ناشناس")} — ${new Date(r.created_at).toLocaleString('fa-IR')}</div>
+            <div class="muted-small" style="margin-top:6px;color:var(--text);">${escapeHTML(r.reason || "")}</div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn danger" onclick="dismissReport(${r.id})"><i data-lucide="check"></i></button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">گزارش سوالی نیست.</div>`}
+    </div>
+
+    <div class="card">
+      <h3>گزارش کاربران/کامنت‌ها (${userReports.length})</h3>
+      ${userReports.length ? userReports.map(r => `
+        <div class="item">
+          <div class="item-main">
+            <div class="item-title">${escapeHTML(r.target_label || "کاربر")}</div>
+            <div class="item-sub">گزارش‌دهنده: ${escapeHTML(r.reporter_name || "ناشناس")} — شناسه کامنت: ${escapeHTML(r.target_id)} — ${new Date(r.created_at).toLocaleString('fa-IR')}</div>
+            <div class="muted-small" style="margin-top:6px;color:var(--text);">${escapeHTML(r.reason || "")}</div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn danger" onclick="dismissReport(${r.id})"><i data-lucide="check"></i></button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">گزارش کاربری نیست.</div>`}
+    </div>
+  `;
+}
+
+async function dismissReport(id) {
+  const confirmed = await showConfirm("این گزارش رو رسیدگی‌شده علامت بزنم و حذفش کنم؟", { title: "رسیدگی به گزارش", confirmLabel: "بله، حذف کن" });
+  if (!confirmed) return;
+  await api("/api/admin/reports/" + id, { method: "DELETE" });
+  renderTabContent();
 }
 
 async function deleteComment(id) {

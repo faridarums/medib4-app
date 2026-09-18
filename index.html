@@ -3642,6 +3642,8 @@ async function loadAppData(){
 
         loadProgress();
 
+        loadBookmarks();
+
     }catch(err){
 
         dataLoadError=true;
@@ -3824,6 +3826,246 @@ async function loadProgress(){
     }catch{
 
         progressCache={};
+
+    }
+
+}
+
+let bookmarkedQuestions=new Set();
+
+let bookmarkedQuestionsMeta={};
+
+async function loadBookmarks(){
+
+    try{
+
+        const res=
+            await fetch(
+                API_BASE+
+                "/api/users/"+
+                encodeURIComponent(
+                    getUserId()
+                )+
+                "/bookmarks"
+            );
+
+        const rows=
+            await res.json();
+
+        bookmarkedQuestions=
+            new Set(
+                rows.map(
+                    r=>r.question_id
+                )
+            );
+
+        bookmarkedQuestionsMeta={};
+
+        rows.forEach(r=>{
+
+            bookmarkedQuestionsMeta[
+                r.question_id
+            ]=r.course_id;
+
+        });
+
+    }catch{
+
+        bookmarkedQuestions=
+            new Set();
+
+        bookmarkedQuestionsMeta={};
+
+    }
+
+}
+
+async function toggleBookmark(questionId,courseId){
+
+    const isBookmarked=
+        bookmarkedQuestions.has(
+            questionId
+        );
+
+    if(isBookmarked){
+
+        bookmarkedQuestions.delete(
+            questionId
+        );
+
+        delete bookmarkedQuestionsMeta[
+            questionId
+        ];
+
+    }else{
+
+        bookmarkedQuestions.add(
+            questionId
+        );
+
+        bookmarkedQuestionsMeta[
+            questionId
+        ]=courseId;
+
+    }
+
+    render();
+
+    try{
+
+        if(isBookmarked){
+
+            await fetch(
+                API_BASE+
+                "/api/users/"+
+                encodeURIComponent(
+                    getUserId()
+                )+
+                "/bookmarks/"+
+                encodeURIComponent(
+                    questionId
+                ),
+                {
+                    method:"DELETE"
+                }
+            );
+
+        }else{
+
+            await fetch(
+                API_BASE+
+                "/api/users/"+
+                encodeURIComponent(
+                    getUserId()
+                )+
+                "/bookmarks",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        question_id:questionId,
+                        course_id:courseId
+                    })
+                }
+            );
+
+        }
+
+    }catch{}
+
+}
+
+async function reportQuestion(questionId){
+
+    const reason=
+        await appPrompt(
+            "چه مشکلی توی این سوال هست؟ (مثلاً پاسخ اشتباهه، گزینه‌ها گنگه...)",
+            "",
+            {
+                title:"گزارش سوال",
+                confirmLabel:"ارسال گزارش"
+            }
+        );
+
+    if(
+        reason===null||
+        !reason.trim()
+    )return;
+
+    try{
+
+        await fetch(
+            API_BASE+"/api/reports",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+                    type:"question",
+                    target_id:questionId,
+                    target_label:
+                        (
+                            questionBanks[
+                                currentCourse
+                            ]||[]
+                        ).find(
+                            x=>x.id===questionId
+                        )?.question||"",
+                    reporter_user_id:
+                        getUserId(),
+                    reason:reason.trim()
+                })
+            }
+        );
+
+        showToast(
+            "گزارش ارسال شد. ممنون!"
+        );
+
+    }catch{
+
+        showToast(
+            "ارسال گزارش ناموفق بود."
+        );
+
+    }
+
+}
+
+async function reportUser(reportedName,commentId){
+
+    const reason=
+        await appPrompt(
+            "چرا این کامنت رو گزارش می‌کنی؟",
+            "",
+            {
+                title:"گزارش کاربر",
+                confirmLabel:"ارسال گزارش"
+            }
+        );
+
+    if(
+        reason===null||
+        !reason.trim()
+    )return;
+
+    try{
+
+        await fetch(
+            API_BASE+"/api/reports",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+                    type:"user",
+                    target_id:
+                        String(commentId),
+                    target_label:
+                        reportedName,
+                    reporter_user_id:
+                        getUserId(),
+                    reason:reason.trim()
+                })
+            }
+        );
+
+        showToast(
+            "گزارش ارسال شد. ممنون!"
+        );
+
+    }catch{
+
+        showToast(
+            "ارسال گزارش ناموفق بود."
+        );
 
     }
 
@@ -5990,6 +6232,42 @@ function renderQuiz(){
 
                 </button>
 
+                <button
+                    type="button"
+                    class="copy-btn"
+                    onclick="toggleBookmark('${q.id}','${currentCourse}')"
+                >
+
+                    <i
+                        data-lucide="${
+                            bookmarkedQuestions.has(q.id)
+                            ?"bookmark-check"
+                            :"bookmark"
+                        }"
+                    ></i>
+
+                    ${
+                        bookmarkedQuestions.has(q.id)
+                        ?"نشان‌شده"
+                        :"نشان کن"
+                    }
+
+                </button>
+
+                <button
+                    type="button"
+                    class="copy-btn"
+                    onclick="reportQuestion('${q.id}')"
+                >
+
+                    <i
+                        data-lucide="flag"
+                    ></i>
+
+                    گزارش سوال
+
+                </button>
+
                 ${
                     currentQuestionIndex>0
 
@@ -7116,6 +7394,45 @@ function renderProfile(){
         <button
             type="button"
             class="card support-entry"
+            onclick="openBookmarks()"
+        >
+
+            <span class="support-entry-left">
+
+                <span
+                    class="support-entry-icon"
+                    style="background:linear-gradient(135deg,#0ea5e9,#0369a1);"
+                >
+
+                    <i data-lucide="bookmark"></i>
+
+                </span>
+
+                <span class="support-entry-text">
+
+                    <strong>
+                        سوالات نشان‌شده
+                    </strong>
+
+                    <span>
+                        سوالایی که نشان کردی
+                    </span>
+
+                </span>
+
+            </span>
+
+            <span class="support-entry-arrow">
+
+                <i data-lucide="chevron-left"></i>
+
+            </span>
+
+        </button>
+
+        <button
+            type="button"
+            class="card support-entry"
             onclick="openMessages()"
         >
 
@@ -7147,9 +7464,9 @@ function renderProfile(){
 
             </span>
 
-        </div>
-
         </button>
+
+        </div>
 
         <div class="developer-credit">
 
@@ -7898,6 +8215,202 @@ async function logoutAccount(){
 }
 
 /* =====================================================
+BOOKMARKED QUESTIONS
+===================================================== */
+
+function openBookmarks(){
+
+    navigate("bookmarks");
+
+}
+
+function renderBookmarksScreen(){
+
+    const items=
+        Array.from(
+            bookmarkedQuestions
+        ).map(qid=>{
+
+            const courseId=
+                bookmarkedQuestionsMeta[
+                    qid
+                ];
+
+            const bank=
+                questionBanks[
+                    courseId
+                ]||[];
+
+            const question=
+                bank.find(
+                    x=>x.id===qid
+                );
+
+            const course=
+                courses.find(
+                    c=>c.id===courseId
+                );
+
+            return {
+                qid,
+                courseId,
+                question,
+                courseTitle:
+                    course
+                    ?course.title
+                    :""
+            };
+
+        }).filter(
+            item=>item.question
+        );
+
+    return `
+
+    <section class="screen">
+
+        <button
+            type="button"
+            class="back-btn"
+            onclick="goBack()"
+        >
+
+            <i data-lucide="arrow-right"></i>
+
+            بازگشت
+
+        </button>
+
+        <div class="page-title">
+
+            <h1>
+                سوالات نشان‌شده
+            </h1>
+
+        </div>
+
+        ${
+            items.length
+            ?items.map(
+                item=>`
+
+                <div
+                    class="card"
+                    style="
+                        margin-bottom:10px;
+                        padding:15px;
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:space-between;
+                            gap:8px;
+                            margin-bottom:8px;
+                        "
+                    >
+
+                        <span
+                            style="
+                                font-size:9.5px;
+                                color:var(--muted);
+                                font-weight:700;
+                            "
+                        >
+
+                            ${escapeHTML(
+                                item.courseTitle
+                            )}
+
+                        </span>
+
+                        <button
+                            type="button"
+                            onclick="toggleBookmark('${item.qid}','${item.courseId}')"
+                            style="
+                                background:none;
+                                border:0;
+                                color:var(--purple);
+                                cursor:pointer;
+                                padding:2px;
+                            "
+                            aria-label="حذف نشان"
+                        >
+
+                            <i
+                                data-lucide="bookmark-x"
+                                style="width:15px;height:15px;"
+                            ></i>
+
+                        </button>
+
+                    </div>
+
+                    <div
+                        style="
+                            font-size:12.5px;
+                            font-weight:700;
+                            color:var(--text);
+                            line-height:1.9;
+                            margin-bottom:8px;
+                        "
+                    >
+
+                        ${escapeHTML(
+                            item.question.question
+                        )}
+
+                    </div>
+
+                    <div
+                        style="
+                            font-size:11px;
+                            color:var(--muted);
+                            line-height:1.9;
+                        "
+                    >
+
+                        پاسخ صحیح:
+                        <strong
+                            style="color:var(--green,#22c55e);"
+                        >
+                            ${escapeHTML(
+                                item.question
+                                    .options[
+                                        item.question
+                                            .answer
+                                    ]
+                            )}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                `
+            ).join("")
+            :`
+
+            <div class="msg-empty">
+
+                هنوز سوالی نشان نکردی.
+                <br>
+                توی هر سوال، دکمه‌ی «نشان کن» رو بزن تا اینجا جمع بشه.
+
+            </div>
+
+            `
+        }
+
+    </section>
+
+    `;
+
+}
+
+/* =====================================================
 LEADERBOARD (top 5)
 ===================================================== */
 
@@ -8482,7 +8995,33 @@ function renderComments(questionId){
 
                             </div>
                             `
-                            :""
+                            :`
+                            <button
+                                type="button"
+                                onclick="reportUser('${
+                                    escapeHTML(
+                                        comment.name||
+                                        "کاربر"
+                                    ).replace(/'/g,"\\'")
+                                }',${comment.id})"
+                                style="
+                                    background:none;
+                                    border:0;
+                                    color:var(--muted);
+                                    padding:2px;
+                                    cursor:pointer;
+                                    flex-shrink:0;
+                                "
+                                aria-label="گزارش کاربر"
+                            >
+
+                                <i
+                                    data-lucide="flag"
+                                    style="width:12px;height:12px;"
+                                ></i>
+
+                            </button>
+                            `
                         }
 
                     </div>
@@ -9264,6 +9803,15 @@ function render(){
 
             main.innerHTML=
                 renderLeaderboard();
+
+            setNav("profile");
+
+            break;
+
+        case "bookmarks":
+
+            main.innerHTML=
+                renderBookmarksScreen();
 
             setNav("profile");
 
