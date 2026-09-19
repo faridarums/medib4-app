@@ -149,6 +149,7 @@ let currentTab = "courses";
 let coursesCache = [];
 let questionsCache = [];
 let selectedCourseFilter = "";
+let bulkMode = "text";
 
 /* =====================================================
 API HELPER
@@ -452,6 +453,54 @@ async function renderQuestionsTab(el) {
     </div>
 
     <div class="card">
+      <h3>افزودن دسته‌جمعی سوالات</h3>
+      <div class="row" style="margin-bottom:10px;">
+        <button type="button" class="btn ${bulkMode==='text'?'btn-add':'btn-ghost'}" onclick="setBulkMode('text')" style="flex:1;">متن ساده</button>
+        <button type="button" class="btn ${bulkMode==='json'?'btn-add':'btn-ghost'}" onclick="setBulkMode('json')" style="flex:1;">JSON پیشرفته</button>
+      </div>
+      <div class="row">
+        <select id="bulkQCourse">
+          ${coursesCache.map(c => `<option value="${c.id}">${escapeHTML(c.title)}</option>`).join("")}
+        </select>
+      </div>
+
+      ${bulkMode === 'text' ? `
+        <p class="muted-small" style="margin-bottom:10px;line-height:2;">
+          هر سوال رو با یه خط خالی از سوال بعدی جدا کن. زیر سوال، گزینه‌ها رو یکی‌یکی بنویس (هر گزینه یه خط)، و جلوی گزینه‌ی درست یه ستاره <b>*</b> بذار. اگه خواستی، یه خط با «توضیح:» هم آخرش اضافه کن.
+        </p>
+        <div class="row">
+          <textarea id="bulkQText" style="min-height:220px;font-size:12px;line-height:2;" placeholder="پایتخت ایران کجاست؟
+اصفهان
+*تهران
+شیراز
+مشهد
+توضیح: تهران پایتخت ایرانه
+
+آب از چند اتم تشکیل شده؟
+یک
+*سه
+چهار
+پنج"></textarea>
+        </div>
+      ` : `
+        <p class="muted-small" style="margin-bottom:12px;">یه لیست از سوالات رو به‌صورت JSON بچسبون.</p>
+        <div class="row">
+          <textarea id="bulkQJson" style="min-height:160px;font-family:monospace;direction:ltr;text-align:left;font-size:11px;" placeholder='[
+  {
+    "question": "متن سوال؟",
+    "options": ["گزینه ۱", "گزینه ۲", "گزینه ۳", "گزینه ۴"],
+    "answer": 0,
+    "explanation": "توضیح اختیاری"
+  }
+]'></textarea>
+        </div>
+        <p class="muted-small" style="margin-bottom:12px;">answer یعنی شماره‌ی گزینه‌ی درست، از صفر شروع می‌شه (۰ = گزینه اول).</p>
+      `}
+
+      <button class="btn btn-add" onclick="addQuestionsBulk()">افزودن همه</button>
+    </div>
+
+    <div class="card">
       <h3>لیست سوالات (${questionsCache.length})</h3>
       ${questionsCache.length ? questionsCache.map(q => `
         <div class="item">
@@ -499,6 +548,117 @@ async function addQuestion() {
   const id = generateId("q");
   await api("/api/admin/questions", { method: "POST", body: JSON.stringify({ id, course_id, question, options, answer, explanation, gender }) });
   renderTabContent();
+}
+
+function setBulkMode(mode) {
+  bulkMode = mode;
+  renderTabContent();
+}
+
+function parseBulkPlainText(raw) {
+  const blocks = raw
+    .split(/\n\s*\n+/)
+    .map(b => b.trim())
+    .filter(Boolean);
+
+  const questions = [];
+  const errors = [];
+
+  blocks.forEach((block, blockIndex) => {
+    const rawLines = block.split("\n").map(l => l.trim()).filter(Boolean);
+    if (!rawLines.length) return;
+
+    const question = rawLines[0].replace(/^(\d+[\.\)]|سوال\s*\d*[:\.]?)\s*/, "").trim();
+    const optionLines = [];
+    let explanation = null;
+
+    rawLines.slice(1).forEach(line => {
+      const explMatch = line.match(/^توضیح\s*[:：]\s*(.+)$/);
+      if (explMatch) {
+        explanation = explMatch[1].trim();
+        return;
+      }
+      optionLines.push(line);
+    });
+
+    if (!question || optionLines.length < 2) {
+      errors.push("سوال شماره " + (blockIndex + 1) + ": متن سوال یا گزینه‌های کافی پیدا نشد.");
+      return;
+    }
+
+    let answer = 0;
+    const options = optionLines.map((line, i) => {
+      let opt = line;
+      let isCorrect = false;
+      if (opt.startsWith("*")) {
+        isCorrect = true;
+        opt = opt.slice(1).trim();
+      }
+      opt = opt.replace(/^(الف|ب|ج|د|[A-Da-d]|[۱۲۳۴]|[1-4])[\)\.\-]\s*/, "").trim();
+      if (isCorrect) answer = i;
+      return opt;
+    });
+
+    if (!optionLines.some(l => l.startsWith("*"))) {
+      errors.push("سوال شماره " + (blockIndex + 1) + ": هیچ گزینه‌ای با * علامت‌گذاری نشده (گزینه اول به‌عنوان پیش‌فرض درست در نظر گرفته شد).");
+    }
+
+    questions.push({ question, options, answer, explanation });
+  });
+
+  return { questions, errors };
+}
+
+async function addQuestionsBulk() {
+  const course_id = document.getElementById("bulkQCourse").value;
+  let list;
+
+  if (bulkMode === "text") {
+    const raw = document.getElementById("bulkQText").value.trim();
+    if (!raw) return showAlert("متن سوال‌ها رو وارد کن.");
+    const { questions, errors } = parseBulkPlainText(raw);
+    if (!questions.length) {
+      return showAlert("هیچ سوال معتبری پیدا نشد. مطمئن شو بین هر سوال یه خط خالی گذاشتی.");
+    }
+    if (errors.length) {
+      const proceed = await showConfirm(
+        errors.join("\n") + "\n\nبا این حال " + questions.length + " سوال قابل استخراج بود. ادامه بدم؟",
+        { title: "چند نکته", confirmLabel: "بله، ادامه بده" }
+      );
+      if (!proceed) return;
+    }
+    list = questions;
+  } else {
+    const raw = document.getElementById("bulkQJson").value.trim();
+    if (!raw) return showAlert("لیست سوالات رو به‌صورت JSON بچسبون.");
+    try {
+      list = JSON.parse(raw);
+    } catch (e) {
+      return showAlert("متن وارد شده JSON معتبر نیست:\n" + e.message);
+    }
+    if (!Array.isArray(list) || !list.length) {
+      return showAlert("باید یه آرایه از سوالات باشه، مثل چیزی که توی مثال بالا نشون داده شده.");
+    }
+    for (const q of list) {
+      if (!q.question || !Array.isArray(q.options) || q.options.length < 2) {
+        return showAlert("هر سوال باید question و حداقل ۲ گزینه داشته باشه.");
+      }
+    }
+  }
+
+  const confirmed = await showConfirm(list.length + " سوال به این دوره اضافه بشه؟", { title: "افزودن دسته‌جمعی", confirmLabel: "اضافه کن" });
+  if (!confirmed) return;
+  try {
+    const res = await api("/api/admin/questions/bulk", { method: "POST", body: JSON.stringify({ course_id, questions: list }) });
+    const textEl = document.getElementById("bulkQText");
+    const jsonEl = document.getElementById("bulkQJson");
+    if (textEl) textEl.value = "";
+    if (jsonEl) jsonEl.value = "";
+    await showAlert(res.count + " سوال با موفقیت اضافه شد.", "انجام شد");
+    renderTabContent();
+  } catch (e) {
+    await showAlert(e.message, "خطا");
+  }
 }
 
 async function editQuestion(id) {
