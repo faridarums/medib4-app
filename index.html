@@ -4278,6 +4278,8 @@ async function enableBiometricLogin(){
                 publicKey:{
                     challenge,
                     rp:{
+                        id:
+                            location.hostname,
                         name:"Medib4"
                     },
                     user:{
@@ -4331,8 +4333,19 @@ async function enableBiometricLogin(){
 
     }catch(e){
 
+        console.error(
+            "biometric enroll error",
+            e
+        );
+
         showToast(
-            "فعال‌سازی اثرانگشت لغو شد یا ناموفق بود."
+            "فعال‌سازی ناموفق بود: "+
+            (e&&e.name?e.name:"") +
+            (
+                e&&e.message
+                ?(" — "+e.message)
+                :""
+            )
         );
 
     }
@@ -4408,12 +4421,17 @@ async function loginWithBiometric(){
         await navigator.credentials.get({
             publicKey:{
                 challenge,
+                rpId:
+                    location.hostname,
                 allowCredentials:[
                     {
                         id:base64ToBuf(
                             credentialId
                         ),
-                        type:"public-key"
+                        type:"public-key",
+                        transports:[
+                            "internal"
+                        ]
                     }
                 ],
                 userVerification:
@@ -4446,8 +4464,19 @@ async function loginWithBiometric(){
 
     }catch(e){
 
+        console.error(
+            "biometric login error",
+            e
+        );
+
         showToast(
-            "تأیید اثرانگشت ناموفق بود."
+            "تأیید ناموفق بود: "+
+            (e&&e.name?e.name:"") +
+            (
+                e&&e.message
+                ?(" — "+e.message)
+                :""
+            )
         );
 
     }
@@ -7590,56 +7619,11 @@ function renderProfile(){
 
                         </button>
 
-                        ${
-                            biometricAvailableCache
-
-                            ?
-
-                            (
-                                hasBiometricEnrolled()
-
-                                ?
-
-                                `
-
-                                <button
-                                    type="button"
-                                    onclick="disableBiometricLogin()"
-                                >
-
-                                    غیرفعال کردن اثرانگشت
-
-                                </button>
-
-                                `
-
-                                :
-
-                                `
-
-                                <button
-                                    type="button"
-                                    onclick="enableBiometricLogin()"
-                                >
-
-                                    فعال کردن ورود با اثرانگشت
-
-                                </button>
-
-                                `
-                            )
-
-                            :
-
-                            ""
-                        }
-
                         <button
                             type="button"
                             class="danger"
                             onclick="logoutAccount()"
                         >
-
                             خروج از حساب
 
                         </button>
@@ -7728,6 +7712,65 @@ function renderProfile(){
         </div>
 
         <div class="profile-actions">
+
+        ${
+            biometricAvailableCache
+            ?`
+
+            <button
+                type="button"
+                class="card support-entry"
+                onclick="${
+                    hasBiometricEnrolled()
+                    ?"disableBiometricLogin()"
+                    :"enableBiometricLogin()"
+                }"
+            >
+
+                <span class="support-entry-left">
+
+                    <span
+                        class="support-entry-icon"
+                        style="background:linear-gradient(135deg,#10b981,#047857);"
+                    >
+
+                        <i data-lucide="fingerprint"></i>
+
+                    </span>
+
+                    <span class="support-entry-text">
+
+                        <strong>
+                            ورود با اثرانگشت
+                        </strong>
+
+                        <span>
+                            ${
+                                hasBiometricEnrolled()
+                                ?"فعاله — برای غیرفعال کردن بزن"
+                                :"به‌جای رمز، اثرانگشت بزن"
+                            }
+                        </span>
+
+                    </span>
+
+                </span>
+
+                <span class="support-entry-arrow">
+
+                    <i data-lucide="${
+                        hasBiometricEnrolled()
+                        ?"check-circle-2"
+                        :"chevron-left"
+                    }"></i>
+
+                </span>
+
+            </button>
+
+            `
+            :""
+        }
 
         <button
             type="button"
