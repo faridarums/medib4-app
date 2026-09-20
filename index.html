@@ -1168,7 +1168,42 @@ QUESTION
 ===================================================== */
 
 .question-card{
+    position:relative;
     padding:18px;
+}
+
+.question-report-btn{
+    position:absolute;
+    top:12px;
+    left:12px;
+
+    width:30px;
+    height:30px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:9px;
+
+    background:
+        rgba(168,85,247,.10);
+
+    border:0;
+    color:var(--muted);
+
+    cursor:pointer;
+
+    z-index:3;
+}
+
+.question-report-btn svg{
+    width:14px;
+    height:14px;
+}
+
+.question-report-btn:active{
+    color:var(--purple);
 }
 
 body.light .question-card{
@@ -3704,6 +3739,18 @@ const STORAGE={
 
     userPassword:"medib4_user_password",
 
+    biometricCredentialId:
+        "medib4_biometric_credential_id",
+
+    biometricVaultUserId:
+        "medib4_biometric_vault_uid",
+
+    biometricVaultPassword:
+        "medib4_biometric_vault_pw",
+
+    biometricVaultName:
+        "medib4_biometric_vault_name",
+
     scoredQuestions:
         "medib4_scored_questions"
 
@@ -4115,6 +4162,295 @@ function setUserPassword(pw){
         STORAGE.userPassword,
         pw
     );
+
+}
+
+/* =====================================================
+BIOMETRIC LOGIN (WebAuthn — device-bound, same model as banking apps)
+===================================================== */
+
+let biometricAvailableCache=false;
+
+async function checkBiometricAvailable(){
+
+    try{
+
+        if(
+            !window.PublicKeyCredential||
+            !PublicKeyCredential.
+                isUserVerifyingPlatformAuthenticatorAvailable
+        ){
+
+            biometricAvailableCache=false;
+
+        }else{
+
+            biometricAvailableCache=
+                await PublicKeyCredential.
+                    isUserVerifyingPlatformAuthenticatorAvailable();
+
+        }
+
+    }catch{
+
+        biometricAvailableCache=false;
+
+    }
+
+    render();
+
+}
+
+function bufToBase64(buf){
+
+    return btoa(
+        String.fromCharCode(
+            ...new Uint8Array(buf)
+        )
+    );
+
+}
+
+function base64ToBuf(b64){
+
+    return Uint8Array.from(
+        atob(b64),
+        c=>c.charCodeAt(0)
+    );
+
+}
+
+function hasBiometricEnrolled(){
+
+    return !!(
+        localStorage.getItem(
+            STORAGE.biometricCredentialId
+        )&&
+        localStorage.getItem(
+            STORAGE.biometricVaultUserId
+        )
+    );
+
+}
+
+async function enableBiometricLogin(){
+
+    if(!biometricAvailableCache){
+
+        showToast(
+            "این گوشی از ورود با اثرانگشت پشتیبانی نمی‌کنه."
+        );
+
+        return;
+
+    }
+
+    const password=
+        getUserPassword();
+
+    const profile=
+        getProfile();
+
+    if(!password||!profile.name){
+
+        showToast(
+            "اول باید با رمزت وارد شده باشی."
+        );
+
+        return;
+
+    }
+
+    try{
+
+        const challenge=
+            crypto.getRandomValues(
+                new Uint8Array(32)
+            );
+
+        const userIdBytes=
+            new TextEncoder().encode(
+                getUserId()
+            );
+
+        const credential=
+            await navigator.credentials.create({
+                publicKey:{
+                    challenge,
+                    rp:{
+                        name:"Medib4"
+                    },
+                    user:{
+                        id:userIdBytes,
+                        name:profile.name,
+                        displayName:
+                            profile.name
+                    },
+                    pubKeyCredParams:[
+                        {type:"public-key",alg:-7},
+                        {type:"public-key",alg:-257}
+                    ],
+                    authenticatorSelection:{
+                        authenticatorAttachment:
+                            "platform",
+                        userVerification:
+                            "required"
+                    },
+                    timeout:60000,
+                    attestation:"none"
+                }
+            });
+
+        localStorage.setItem(
+            STORAGE.biometricCredentialId,
+            bufToBase64(credential.rawId)
+        );
+
+        localStorage.setItem(
+            STORAGE.biometricVaultUserId,
+            getUserId()
+        );
+
+        localStorage.setItem(
+            STORAGE.biometricVaultPassword,
+            password
+        );
+
+        localStorage.setItem(
+            STORAGE.biometricVaultName,
+            profile.name
+        );
+
+        showToast(
+            "ورود با اثرانگشت فعال شد."
+        );
+
+        profileMenuOpen=false;
+
+        render();
+
+    }catch(e){
+
+        showToast(
+            "فعال‌سازی اثرانگشت لغو شد یا ناموفق بود."
+        );
+
+    }
+
+}
+
+function disableBiometricLogin(){
+
+    localStorage.removeItem(
+        STORAGE.biometricCredentialId
+    );
+
+    localStorage.removeItem(
+        STORAGE.biometricVaultUserId
+    );
+
+    localStorage.removeItem(
+        STORAGE.biometricVaultPassword
+    );
+
+    localStorage.removeItem(
+        STORAGE.biometricVaultName
+    );
+
+    showToast(
+        "ورود با اثرانگشت غیرفعال شد."
+    );
+
+    profileMenuOpen=false;
+
+    render();
+
+}
+
+async function loginWithBiometric(){
+
+    const credentialId=
+        localStorage.getItem(
+            STORAGE.biometricCredentialId
+        );
+
+    const vaultUserId=
+        localStorage.getItem(
+            STORAGE.biometricVaultUserId
+        );
+
+    const vaultPassword=
+        localStorage.getItem(
+            STORAGE.biometricVaultPassword
+        );
+
+    if(
+        !credentialId||
+        !vaultUserId||
+        !vaultPassword
+    ){
+
+        showToast(
+            "اثرانگشتی روی این گوشی ثبت نشده."
+        );
+
+        return;
+
+    }
+
+    try{
+
+        const challenge=
+            crypto.getRandomValues(
+                new Uint8Array(32)
+            );
+
+        await navigator.credentials.get({
+            publicKey:{
+                challenge,
+                allowCredentials:[
+                    {
+                        id:base64ToBuf(
+                            credentialId
+                        ),
+                        type:"public-key"
+                    }
+                ],
+                userVerification:
+                    "required",
+                timeout:60000
+            }
+        });
+
+        localStorage.setItem(
+            STORAGE.userId,
+            vaultUserId
+        );
+
+        setUserPassword(
+            vaultPassword
+        );
+
+        saveProfile({
+            name:
+                localStorage.getItem(
+                    STORAGE.biometricVaultName
+                )||""
+        });
+
+        showToast(
+            "خوش اومدی!"
+        );
+
+        render();
+
+    }catch(e){
+
+        showToast(
+            "تأیید اثرانگشت ناموفق بود."
+        );
+
+    }
 
 }
 
@@ -6049,6 +6385,17 @@ function renderQuiz(){
             class="card question-card"
         >
 
+            <button
+                type="button"
+                class="question-report-btn"
+                onclick="reportQuestion('${q.id}')"
+                aria-label="گزارش سوال"
+            >
+
+                <i data-lucide="flag"></i>
+
+            </button>
+
             <div class="question-number">
 
                 سوال
@@ -6251,20 +6598,6 @@ function renderQuiz(){
                         ?"نشان‌شده"
                         :"نشان کن"
                     }
-
-                </button>
-
-                <button
-                    type="button"
-                    class="copy-btn"
-                    onclick="reportQuestion('${q.id}')"
-                >
-
-                    <i
-                        data-lucide="flag"
-                    ></i>
-
-                    گزارش سوال
 
                 </button>
 
@@ -7257,6 +7590,50 @@ function renderProfile(){
 
                         </button>
 
+                        ${
+                            biometricAvailableCache
+
+                            ?
+
+                            (
+                                hasBiometricEnrolled()
+
+                                ?
+
+                                `
+
+                                <button
+                                    type="button"
+                                    onclick="disableBiometricLogin()"
+                                >
+
+                                    غیرفعال کردن اثرانگشت
+
+                                </button>
+
+                                `
+
+                                :
+
+                                `
+
+                                <button
+                                    type="button"
+                                    onclick="enableBiometricLogin()"
+                                >
+
+                                    فعال کردن ورود با اثرانگشت
+
+                                </button>
+
+                                `
+                            )
+
+                            :
+
+                            ""
+                        }
+
                         <button
                             type="button"
                             class="danger"
@@ -7485,6 +7862,45 @@ let authPasswordVisible=false;
 function renderAuthForm(profile){
 
     return `
+
+    ${
+        hasBiometricEnrolled()&&
+        biometricAvailableCache
+
+        ?
+
+        `
+
+        <button
+            type="button"
+            class="auth-submit"
+            style="margin-bottom:14px;"
+            onclick="loginWithBiometric()"
+        >
+
+            <i data-lucide="fingerprint"></i>
+
+            <span>ورود با اثرانگشت</span>
+
+        </button>
+
+        <div
+            style="
+                text-align:center;
+                color:var(--muted);
+                font-size:10px;
+                margin-bottom:14px;
+            "
+        >
+            یا با نام و رمز عبور
+        </div>
+
+        `
+
+        :
+
+        ""
+    }
 
     <div class="auth-heading">
 
@@ -9851,6 +10267,8 @@ getScoredQuestions();
 render();
 
 loadAppData();
+
+checkBiometricAvailable();
 
 </script>
 
