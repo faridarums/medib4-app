@@ -2468,6 +2468,30 @@ body.light .auth-field input::placeholder{
     box-shadow:0 6px 16px -8px rgba(168,85,247,.55);
 }
 
+.auth-fingerprint-btn{
+    width:52px;
+    height:52px;
+    flex-shrink:0;
+    margin-top:2px;
+    border-radius:16px;
+    border:1px solid rgba(168,85,247,.35);
+    background:rgba(168,85,247,.10);
+    color:var(--purple);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform .15s;
+}
+
+.auth-fingerprint-btn svg{
+    width:20px;
+    height:20px;
+}
+
+.auth-fingerprint-btn:active{
+    transform:scale(.94);
+}
+
 .auth-error{
     display:flex;
     align-items:center;
@@ -3614,7 +3638,7 @@ GENERIC CONFIRM/PROMPT MODAL (replaces native browser dialogs)
 COURSES
 ===================================================== */
 
-const API_BASE="https://medib4-worker.tmpl8uxxmvxq2d.workers.dev";
+const API_BASE="https://medib4-worker.medib4aru.workers.dev";
 
 let courses=[];
 
@@ -4680,6 +4704,22 @@ function escapeHTML(text){
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
+
+}
+
+function vibrateWrongAnswer(){
+
+    try{
+
+        if(navigator.vibrate){
+
+            navigator.vibrate(
+                [120,60,120]
+            );
+
+        }
+
+    }catch{}
 
 }
 
@@ -6827,6 +6867,8 @@ function selectAnswer(index){
 
                 stats.wrong++;
 
+                vibrateWrongAnswer();
+
                 syncAnswerToServer(
                     false,
                     q.id,
@@ -7906,45 +7948,6 @@ function renderAuthForm(profile){
 
     return `
 
-    ${
-        hasBiometricEnrolled()&&
-        biometricAvailableCache
-
-        ?
-
-        `
-
-        <button
-            type="button"
-            class="auth-submit"
-            style="margin-bottom:14px;"
-            onclick="loginWithBiometric()"
-        >
-
-            <i data-lucide="fingerprint"></i>
-
-            <span>ورود با اثرانگشت</span>
-
-        </button>
-
-        <div
-            style="
-                text-align:center;
-                color:var(--muted);
-                font-size:10px;
-                margin-bottom:14px;
-            "
-        >
-            یا با نام و رمز عبور
-        </div>
-
-        `
-
-        :
-
-        ""
-    }
-
     <div class="auth-heading">
 
         <strong>
@@ -8032,17 +8035,47 @@ function renderAuthForm(profile){
             `
         }
 
-        <button
-            type="button"
-            class="auth-submit"
-            onclick="handleAuthSubmit()"
+        <div
+            style="
+                display:flex;
+                gap:8px;
+            "
         >
 
-            <i data-lucide="log-in"></i>
+            <button
+                type="button"
+                class="auth-submit"
+                style="flex:1;"
+                onclick="handleAuthSubmit()"
+            >
 
-            <span>ورود / ثبت‌نام</span>
+                <i data-lucide="log-in"></i>
 
-        </button>
+                <span>ورود / ثبت‌نام</span>
+
+            </button>
+
+            ${
+                biometricAvailableCache&&
+                hasBiometricEnrolled()
+                ?`
+
+                <button
+                    type="button"
+                    class="auth-fingerprint-btn"
+                    onclick="loginWithBiometric()"
+                    aria-label="ورود با اثرانگشت"
+                >
+
+                    <i data-lucide="fingerprint"></i>
+
+                </button>
+
+                `
+                :""
+            }
+
+        </div>
 
         <button
             type="button"
@@ -8531,6 +8564,28 @@ async function handleAuthSubmit(){
         saveProfile({name});
 
         render();
+
+        if(
+            biometricAvailableCache&&
+            !hasBiometricEnrolled()
+        ){
+
+            const wantsBiometric=
+                await appConfirm(
+                    "به‌جای تایپ رمز، دفعه‌های بعد اثرانگشت بزنی؟",
+                    {
+                        title:"ورود سریع‌تر",
+                        confirmLabel:"بله، فعالش کن"
+                    }
+                );
+
+            if(wantsBiometric){
+
+                await enableBiometricLogin();
+
+            }
+
+        }
 
         if(regData.recovery_code){
 
