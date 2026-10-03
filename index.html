@@ -4788,19 +4788,7 @@ function getRandomQuestions(courseId){
 
     }
 
-    const amount=
-        Math.random()<.5
-        ?3
-        :4;
-
     return shuffle(bank)
-        .slice(
-            0,
-            Math.min(
-                amount,
-                bank.length
-            )
-        )
         .map(q=>{
 
             const optionObjects=
