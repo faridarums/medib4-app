@@ -308,9 +308,9 @@ function renderApp() {
     { id: "users", label: "کاربران" },
     { id: "messages", label: "پیام‌ها" },
     { id: "announcements", label: "اطلاع‌رسانی" },
-    { id: "activity", label: "فعالیت ادمین" },
   ];
   if (adminRole === "primary") {
+    tabs.push({ id: "activity", label: "فعالیت ادمین" });
     tabs.push({ id: "settings", label: "تنظیمات" });
   }
   document.getElementById("app").innerHTML = `
@@ -1048,7 +1048,7 @@ async function renderAnnouncementsTab(el) {
   el.innerHTML = `
     <div class="card">
       <h3>اطلاعیه جدید</h3>
-      <div class="row"><select id="annCourse">${coursesCache.map(c => `<option value="${c.id}">${escapeHTML(c.title)}</option>`).join("")}</select></div>
+      <div class="row"><select id="annCourse"><option value="__global__">اطلاعیه عمومی حساب کاربری (نمایش در بخش حساب)</option>${coursesCache.map(c => `<option value="${c.id}">اطلاعیه مخصوص درس: ${escapeHTML(c.title)}</option>`).join("")}</select></div>
       <div class="row"><input id="annTitle" placeholder="عنوان اطلاعیه"></div>
       <div class="row"><textarea id="annText" placeholder="متن اطلاعیه" style="min-height:110px;"></textarea></div>
       <button class="btn btn-add" onclick="addAnnouncement()">انتشار اطلاعیه</button>
@@ -1059,7 +1059,7 @@ async function renderAnnouncementsTab(el) {
         <div class="item">
           <div class="item-main">
             <div class="item-title">${escapeHTML(a.title || "بدون عنوان")}</div>
-            <div class="item-sub">${escapeHTML(a.course_title || a.course_id)} — ${new Date(a.created_at).toLocaleString('fa-IR')}</div>
+            <div class="item-sub">${a.course_id === '__global__' ? 'اطلاعیه عمومی حساب کاربری' : escapeHTML(a.course_title || a.course_id)} — ${new Date(a.created_at).toLocaleString('fa-IR')}</div>
             <div class="muted-small" style="white-space:pre-wrap;margin-top:6px;">${escapeHTML(a.text)}</div>
           </div>
           <div class="item-actions">
