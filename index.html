@@ -3644,6 +3644,8 @@ let courses=[];
 
 let questionBanks={};
 
+let courseAnnouncements={};
+
 let dataLoaded=false;
 
 let dataLoadError=false;
@@ -4543,24 +4545,27 @@ function saveScoredQuestions(list){
 
 }
 
-function hasQuestionBeenScored(questionId){
+function scoreKey(questionId,courseId=currentCourse){
 
-    return getScoredQuestions()
-        .includes(questionId);
+    return String(courseId||"")+"::"+String(questionId);
 
 }
 
-function markQuestionAsScored(questionId){
+function hasQuestionBeenScored(questionId,courseId=currentCourse){
 
-    const scored=
-        getScoredQuestions();
+    const key=scoreKey(questionId,courseId);
+    return getScoredQuestions().some(id=>String(id)===key);
 
-    if(!scored.includes(questionId)){
+}
 
-        scored.push(questionId);
+function markQuestionAsScored(questionId,courseId=currentCourse){
 
+    const scored=getScoredQuestions();
+    const key=scoreKey(questionId,courseId);
+
+    if(!scored.some(id=>String(id)===key)){
+        scored.push(key);
         saveScoredQuestions(scored);
-
     }
 
 }
@@ -5418,9 +5423,45 @@ function courseCard(course){
 COURSE PAGE
 ===================================================== */
 
+async function loadCourseAnnouncements(courseId){
+    try{
+        const res=await fetch(API_BASE+"/api/announcements?course="+encodeURIComponent(courseId));
+        if(!res.ok) throw new Error("bad response");
+        courseAnnouncements[courseId]=await res.json();
+    }catch(e){
+        courseAnnouncements[courseId]=[];
+    }
+}
+
+function renderCourseAnnouncements(courseId){
+    const list=courseAnnouncements[courseId]||[];
+    if(!list.length)return "";
+
+    return `
+        <div class="card" style="margin-top:14px;">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+                <i data-lucide="megaphone" style="width:19px;height:19px;"></i>
+                <strong style="font-size:14px;">اطلاعیه‌های این درس</strong>
+            </div>
+            ${list.map(a=>`
+                <div style="padding:11px 0;${list.indexOf(a)?'border-top:1px solid var(--border);':''}">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:5px;">${escapeHTML(a.title)}</div>
+                    <div style="font-size:12px;line-height:2;color:var(--muted);white-space:pre-wrap;">${escapeHTML(a.text)}</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:5px;">${new Date(a.created_at).toLocaleDateString('fa-IR')}</div>
+                </div>
+            `).join("")}
+        </div>`;
+}
+
 function openCourse(courseId){
 
     currentCourse=courseId;
+
+    loadCourseAnnouncements(courseId).then(()=>{
+        if(currentCourse===courseId && (currentScreen==="course" || currentScreen==="genderSelect")){
+            render();
+        }
+    });
 
     if(GENDER_SPLIT_COURSES.includes(courseId)){
 
@@ -5624,6 +5665,8 @@ function renderCourse(){
 
         </div>
 
+        ${renderCourseAnnouncements(currentCourse)}
+
         <div class="mode-grid">
 
             <div
@@ -5645,7 +5688,7 @@ function renderCourse(){
                 </div>
 
                 <strong>
-                    نمونه سوال آموزشی
+                    آزمون آموزشی
                 </strong>
 
             </div>
@@ -5669,7 +5712,7 @@ function renderCourse(){
                 </div>
 
                 <strong>
-                    نمونه سوال زمان‌دار
+                    آزمون زمان‌دار
                 </strong>
 
             </div>
@@ -5981,8 +6024,9 @@ function startExam(courseId,mode){
 
     if(mode==="timed"){
 
+        // ۳۰ ثانیه برای هر سؤال؛ حداقل زمان آزمون همان تعداد سؤال × ۳۰ ثانیه است.
         remainingSeconds=
-            8*60;
+            currentQuestions.length*30;
 
     }else{
 
@@ -6209,7 +6253,8 @@ function renderQuiz(){
 
         const alreadyScored=
             hasQuestionBeenScored(
-                q.id
+                q.id,
+                currentCourse
             );
 
         feedbackHTML=`
@@ -6789,7 +6834,8 @@ function selectAnswer(index){
 
         const alreadyScored=
             hasQuestionBeenScored(
-                q.id
+                q.id,
+                currentCourse
             );
 
         if(!alreadyScored){
@@ -6829,7 +6875,8 @@ function selectAnswer(index){
             saveStats(stats);
 
             markQuestionAsScored(
-                q.id
+                q.id,
+                currentCourse
             );
 
         }
@@ -7065,7 +7112,8 @@ function finishQuiz(){
 
                 if(
                     hasQuestionBeenScored(
-                        q.id
+                        q.id,
+                        currentCourse
                     )
                 ){
 
@@ -7102,7 +7150,8 @@ function finishQuiz(){
                 }
 
                 markQuestionAsScored(
-                    q.id
+                    q.id,
+                    currentCourse
                 );
 
             }

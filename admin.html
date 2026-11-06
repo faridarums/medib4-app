@@ -307,6 +307,8 @@ function renderApp() {
     { id: "reports", label: "گزارش‌ها" },
     { id: "users", label: "کاربران" },
     { id: "messages", label: "پیام‌ها" },
+    { id: "announcements", label: "اطلاع‌رسانی" },
+    { id: "activity", label: "فعالیت ادمین" },
   ];
   if (adminRole === "primary") {
     tabs.push({ id: "settings", label: "تنظیمات" });
@@ -342,6 +344,8 @@ async function renderTabContent() {
     else if (currentTab === "reports") await renderReportsTab(el);
     else if (currentTab === "users") await renderUsersTab(el);
     else if (currentTab === "messages") await renderMessagesTab(el);
+    else if (currentTab === "announcements") await renderAnnouncementsTab(el);
+    else if (currentTab === "activity") await renderActivityTab(el);
     else if (currentTab === "settings") await renderSettingsTab(el);
   } catch (e) {
     el.innerHTML = `<div class="card"><div class="err">${e.message}</div></div>`;
@@ -423,6 +427,7 @@ async function renderQuestionsTab(el) {
           <option value="">همه دوره‌ها</option>
           ${coursesCache.map(c => `<option value="${c.id}" ${selectedCourseFilter===c.id?'selected':''}>${escapeHTML(c.title)}</option>`).join("")}
         </select>
+        <button type="button" class="btn btn-ghost danger" onclick="deleteAllQuestionsForSelectedCourse()">حذف تمام سوالات این درس</button>
       </div>
     </div>
 
@@ -556,57 +561,125 @@ function setBulkMode(mode) {
 }
 
 function parseBulkPlainText(raw) {
-  const blocks = raw
-    .split(/\n\s*\n+/)
-    .map(b => b.trim())
-    .filter(Boolean);
+  // جداکننده اصلی خط خالی است؛ اما اگر شماره‌گذاری سؤال‌ها وجود داشته باشد
+  // حتی در صورت حذف فاصله‌های خالی توسط Paste هم می‌توانیم سؤال‌ها را جدا کنیم.
+  const normalized = String(raw || "").replace(/\r\n?/g, "\n").trim();
+  if (!normalized) return { questions: [], errors: [] };
+
+  const lines = normalized.split("\n");
+  const startsQuestion = line =>
+    /^\s*(?:\d+\s*[\.\)]|سوال\s*\d*\s*[:\.)-])\s*/i.test(line);
+
+  const blocks = [];
+  let current = [];
+  const hasExplicitQuestionMarkers = lines.some(startsQuestion);
+
+  if (hasExplicitQuestionMarkers) {
+    for (const line of lines) {
+      if (startsQuestion(line) && current.some(x => x.trim())) {
+        blocks.push(current);
+        current = [];
+      }
+      current.push(line);
+    }
+    if (current.some(x => x.trim())) blocks.push(current);
+  } else {
+    let block = [];
+    for (const line of lines) {
+      if (!line.trim()) {
+        if (block.some(x => x.trim())) {
+          blocks.push(block);
+          block = [];
+        }
+      } else {
+        block.push(line);
+      }
+    }
+    if (block.some(x => x.trim())) blocks.push(block);
+  }
 
   const questions = [];
   const errors = [];
 
-  blocks.forEach((block, blockIndex) => {
-    const rawLines = block.split("\n").map(l => l.trim()).filter(Boolean);
-    if (!rawLines.length) return;
+  blocks.forEach((rawBlock, blockIndex) => {
+    const cleaned = rawBlock.map(line => line.trimEnd());
+    while (cleaned.length && !cleaned[0].trim()) cleaned.shift();
+    while (cleaned.length && !cleaned[cleaned.length - 1].trim()) cleaned.pop();
+    if (!cleaned.length) return;
 
-    const question = rawLines[0].replace(/^(\d+[\.\)]|سوال\s*\d*[:\.]?)\s*/, "").trim();
+    let first = cleaned[0].trim();
+    const question = first.replace(/^\s*(\d+\s*[\.\)]|سوال\s*\d*\s*[:\.)-])\s*/i, "").trim();
     const optionLines = [];
+    const questionLines = [question];
     let explanation = null;
+    let seenOption = false;
 
-    rawLines.slice(1).forEach(line => {
+    for (let i = 1; i < cleaned.length; i++) {
+      const line = cleaned[i].trim();
+      if (!line) continue;
       const explMatch = line.match(/^توضیح\s*[:：]\s*(.+)$/);
       if (explMatch) {
         explanation = explMatch[1].trim();
-        return;
+        continue;
       }
-      optionLines.push(line);
-    });
+      // گزینه‌ها با ستاره یا حروف/شماره گزینه یا خطوط کوتاهِ بعد از اولین گزینه تشخیص داده می‌شوند.
+      const looksLikeOption = /^\*\s*/.test(line) || /^(?:الف|ب|ج|د|[A-Da-d]|[۱۲۳۴1-4])\s*[\)\.\-:]/.test(line);
+      if (seenOption || looksLikeOption) {
+        seenOption = true;
+        optionLines.push(line);
+      } else {
+        // اگر متن سؤال چند خطی باشد، فاصله/خطوط آن حفظ می‌شود.
+        questionLines.push(line);
+      }
+    }
 
     if (!question || optionLines.length < 2) {
       errors.push("سوال شماره " + (blockIndex + 1) + ": متن سوال یا گزینه‌های کافی پیدا نشد.");
       return;
     }
 
+    const finalQuestion = questionLines.join("\n").trim();
     let answer = 0;
+    let marked = false;
     const options = optionLines.map((line, i) => {
-      let opt = line;
-      let isCorrect = false;
-      if (opt.startsWith("*")) {
-        isCorrect = true;
-        opt = opt.slice(1).trim();
+      let opt = line.trim();
+      const isCorrect = /^\*\s*/.test(opt);
+      if (isCorrect) {
+        marked = true;
+        answer = i;
+        opt = opt.replace(/^\*\s*/, "");
       }
-      opt = opt.replace(/^(الف|ب|ج|د|[A-Da-d]|[۱۲۳۴]|[1-4])[\)\.\-]\s*/, "").trim();
-      if (isCorrect) answer = i;
+      opt = opt.replace(/^(الف|ب|ج|د|[A-Da-d]|[۱۲۳۴]|[1-4])\s*[\)\.\-:]\s*/i, "").trim();
       return opt;
     });
 
-    if (!optionLines.some(l => l.startsWith("*"))) {
+    if (!marked) {
       errors.push("سوال شماره " + (blockIndex + 1) + ": هیچ گزینه‌ای با * علامت‌گذاری نشده (گزینه اول به‌عنوان پیش‌فرض درست در نظر گرفته شد).");
     }
 
-    questions.push({ question, options, answer, explanation });
+    questions.push({ question: finalQuestion, options, answer, explanation });
   });
 
   return { questions, errors };
+}
+
+async function deleteAllQuestionsForSelectedCourse() {
+  const courseId = document.getElementById("courseFilter")?.value || selectedCourseFilter;
+  if (!courseId) return showAlert("اول یک درس را از فیلتر انتخاب کن.");
+  const course = coursesCache.find(c => c.id === courseId);
+  const confirmed = await showConfirm(
+    `تمام سوالات درس «${course?.title || courseId}» حذف شود؟\nاین عملیات قابل بازگشت نیست.`,
+    { title: "حذف همه سوالات", confirmLabel: "حذف همه", danger: true }
+  );
+  if (!confirmed) return;
+  try {
+    const res = await api("/api/admin/questions/by-course/" + encodeURIComponent(courseId), { method: "DELETE" });
+    await showAlert(`${res.deleted || 0} سوال حذف شد.`, "انجام شد");
+    selectedCourseFilter = courseId;
+    await renderTabContent();
+  } catch (e) {
+    await showAlert(e.message, "خطا");
+  }
 }
 
 async function addQuestionsBulk() {
@@ -964,6 +1037,75 @@ async function sendThreadReply() {
   if (!text) return;
   await api("/api/admin/messages", { method: "POST", body: JSON.stringify({ user_id: currentThreadUserId, text }) });
   renderTabContent();
+}
+
+/* =====================================================
+ANNOUNCEMENTS TAB
+===================================================== */
+async function renderAnnouncementsTab(el) {
+  if (!coursesCache.length) coursesCache = await api("/api/admin/courses");
+  const list = await api("/api/admin/announcements");
+  el.innerHTML = `
+    <div class="card">
+      <h3>اطلاعیه جدید</h3>
+      <div class="row"><select id="annCourse">${coursesCache.map(c => `<option value="${c.id}">${escapeHTML(c.title)}</option>`).join("")}</select></div>
+      <div class="row"><input id="annTitle" placeholder="عنوان اطلاعیه"></div>
+      <div class="row"><textarea id="annText" placeholder="متن اطلاعیه" style="min-height:110px;"></textarea></div>
+      <button class="btn btn-add" onclick="addAnnouncement()">انتشار اطلاعیه</button>
+    </div>
+    <div class="card">
+      <h3>اطلاعیه‌های ثبت‌شده (${list.length})</h3>
+      ${list.length ? list.map(a => `
+        <div class="item">
+          <div class="item-main">
+            <div class="item-title">${escapeHTML(a.title || "بدون عنوان")}</div>
+            <div class="item-sub">${escapeHTML(a.course_title || a.course_id)} — ${new Date(a.created_at).toLocaleString('fa-IR')}</div>
+            <div class="muted-small" style="white-space:pre-wrap;margin-top:6px;">${escapeHTML(a.text)}</div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn danger" onclick="deleteAnnouncement('${a.id}')"><i data-lucide="trash-2"></i></button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">هنوز اطلاعیه‌ای ثبت نشده.</div>`}
+    </div>`;
+}
+
+async function addAnnouncement() {
+  const course_id = document.getElementById("annCourse").value;
+  const title = document.getElementById("annTitle").value.trim();
+  const text = document.getElementById("annText").value.trim();
+  if (!title || !text) return showAlert("عنوان و متن اطلاعیه الزامی است.");
+  await api("/api/admin/announcements", { method: "POST", body: JSON.stringify({ course_id, title, text }) });
+  await showAlert("اطلاعیه منتشر شد.", "انجام شد");
+  renderTabContent();
+}
+
+async function deleteAnnouncement(id) {
+  const ok = await showConfirm("این اطلاعیه حذف شود؟", { title: "حذف اطلاعیه", confirmLabel: "حذف", danger: true });
+  if (!ok) return;
+  await api("/api/admin/announcements/" + encodeURIComponent(id), { method: "DELETE" });
+  renderTabContent();
+}
+
+/* =====================================================
+ACTIVITY TAB
+===================================================== */
+async function renderActivityTab(el) {
+  const list = await api("/api/admin/activity");
+  el.innerHTML = `
+    <div class="card">
+      <h3>گزارش فعالیت‌های ادمین</h3>
+      <p class="muted-small">آخرین فعالیت‌ها در اینجا ثبت می‌شوند.</p>
+      ${list.length ? list.map(a => `
+        <div class="item">
+          <div class="item-main">
+            <div class="item-title">${escapeHTML(a.action)}</div>
+            <div class="item-sub">${a.role === 'primary' ? 'ادمین اصلی' : 'ادمین دستیار'} — ${new Date(a.created_at).toLocaleString('fa-IR')}</div>
+            ${a.details ? `<div class="muted-small" style="white-space:pre-wrap;margin-top:5px;">${escapeHTML(a.details)}</div>` : ''}
+          </div>
+        </div>
+      `).join("") : `<div class="empty">هنوز فعالیتی ثبت نشده.</div>`}
+    </div>`;
 }
 
 /* =====================================================
