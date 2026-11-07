@@ -3300,32 +3300,31 @@ body.light .result-question{
 }
 
 
-.notice-bell-wrap{position:relative;margin-inline-start:auto;display:flex;}
-.notice-bell-btn{position:relative;width:42px;height:42px;border:1px solid var(--border);border-radius:13px;background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;box-shadow:0 8px 24px rgba(0,0,0,.12)}
-.notice-bell-btn:hover{transform:translateY(-1px);border-color:rgba(168,85,247,.5)}
+/* Global announcements bell - isolated styles */
+.notice-bell-wrap{position:relative;display:flex;align-items:center;flex:0 0 auto}
+.notice-bell-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;position:relative;border-radius:15px;color:#c084fc;background:linear-gradient(145deg,rgba(168,85,247,.22),rgba(91,33,182,.16));border:1px solid rgba(192,132,252,.28);box-shadow:0 0 18px rgba(168,85,247,.10);transition:.2s}
+.notice-bell-btn:hover{transform:translateY(-1px)}
+.notice-bell-btn svg{width:21px;height:21px}
+.notice-bell-badge[hidden]{display:none}
 .notice-bell-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
-.notice-modal-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(4,2,10,.68);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:22px;animation:noticeFadeIn .18s ease}
-.notice-modal{width:min(100%,430px);max-height:min(82vh,680px);overflow:auto;background:linear-gradient(145deg,rgba(25,18,42,.98),rgba(12,9,23,.98));border:1px solid rgba(168,85,247,.28);border-radius:24px;padding:24px 20px 20px;box-shadow:0 28px 90px rgba(0,0,0,.48);position:relative;animation:noticePopIn .22s cubic-bezier(.2,.8,.2,1)}
+body.light .notice-bell-btn{color:#d97706;background:linear-gradient(145deg,rgba(251,191,36,.16),rgba(245,158,11,.08));border-color:rgba(217,119,6,.24);box-shadow:0 5px 16px rgba(245,158,11,.08)}
+body.light .notice-bell-badge{border-color:#f7f4fb}
+.notice-modal-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(4,2,10,.68);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:22px;animation:noticeFadeIn .18s ease}
+.notice-modal{width:min(100%,430px);max-height:min(82vh,680px);overflow:auto;background:linear-gradient(145deg,rgba(25,18,42,.98),rgba(12,9,23,.98));border:1px solid rgba(168,85,247,.28);border-radius:22px;padding:24px 20px 20px;box-shadow:0 28px 90px rgba(0,0,0,.48);position:relative;animation:noticePopIn .22s cubic-bezier(.2,.8,.2,1)}
 .notice-close{position:absolute;top:12px;left:12px;width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.07);color:var(--text);font-size:25px;line-height:1;cursor:pointer}
-.notice-modal-icon{width:54px;height:54px;border-radius:17px;display:flex;align-items:center;justify-content:center;margin:2px auto 12px;color:#fff;box-shadow:0 10px 30px rgba(168,85,247,.25)}
-.notice-modal-icon.course{background:linear-gradient(135deg,#06b6d4,#2563eb)}
-.notice-modal-icon.global{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.notice-modal-icon{width:50px;height:50px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:2px auto 12px;color:#fff;background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.notice-modal-icon svg{width:24px;height:24px}
 .notice-modal-kicker{text-align:center;font-size:11px;color:var(--muted);margin-bottom:5px}
 .notice-modal h2{text-align:center;font-size:18px;margin:0 0 18px;color:var(--text)}
 .notice-list{display:flex;flex-direction:column;gap:10px}
-.notice-item{padding:13px 14px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid var(--border)}
+.notice-item{padding:13px 14px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid var(--border)}
 .notice-item-title{font-size:13px;font-weight:800;margin-bottom:7px;color:var(--text)}
 .notice-item-text{font-size:12px;line-height:2;color:var(--muted);white-space:pre-wrap}
 .notice-item-date{font-size:10px;color:var(--muted);margin-top:7px;opacity:.8}
 .notice-primary{width:100%;margin-top:16px;border:0;border-radius:13px;padding:11px;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-family:inherit;font-weight:800;cursor:pointer}
-.course-notice-trigger{width:100%;display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 14px;border:1px solid rgba(6,182,212,.28);border-radius:17px;background:linear-gradient(135deg,rgba(6,182,212,.11),rgba(37,99,235,.07));color:var(--text);font-family:inherit;cursor:pointer;text-align:right;transition:.18s}
-.course-notice-trigger:hover{transform:translateY(-1px);border-color:rgba(6,182,212,.5)}
-.course-notice-trigger-icon{width:40px;height:40px;flex:none;border-radius:13px;background:linear-gradient(135deg,#06b6d4,#2563eb);color:#fff;display:flex;align-items:center;justify-content:center}
-.course-notice-trigger-main{display:flex;flex-direction:column;gap:3px;flex:1}.course-notice-trigger-main strong{font-size:12px}.course-notice-trigger-main span{font-size:10px;color:var(--muted)}.course-notice-arrow{width:17px;color:var(--muted)}
 @keyframes noticeFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes noticePopIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
 body.light .notice-modal{background:linear-gradient(145deg,rgba(255,255,255,.99),rgba(248,246,252,.99));box-shadow:0 28px 80px rgba(70,50,90,.22)}
-body.light .notice-bell-badge{border-color:#f7f4fb}
 
 </style>
 </head>
@@ -3363,7 +3362,7 @@ HEADER
     <div class="notice-bell-wrap">
         <button type="button" class="notice-bell-btn" onclick="openGlobalAnnouncements()" aria-label="اطلاعیه‌ها">
             <i data-lucide="bell"></i>
-            ${globalAnnouncements && unreadAnnouncementCount(globalAnnouncements) ? `<span class="notice-bell-badge">${unreadAnnouncementCount(globalAnnouncements)>9?'۹+':unreadAnnouncementCount(globalAnnouncements)}</span>` : ""}
+            <span id="globalNoticeBadge" class="notice-bell-badge" hidden></span>
         </button>
     </div>
 
@@ -5271,25 +5270,90 @@ function showProfile(){
 HOME
 ===================================================== */
 
+
+let globalAnnouncements=null;
+let globalAnnouncementsLoading=false;
+let globalAnnouncementModalOpen=false;
+
+function getGlobalAnnouncementReadIds(){
+    try{
+        const ids=JSON.parse(localStorage.getItem("medib4_read_global_announcements")||"[]");
+        return new Set(Array.isArray(ids)?ids.map(String):[]);
+    }catch(e){return new Set();}
+}
+
+function getGlobalAnnouncementUnreadCount(){
+    const read=getGlobalAnnouncementReadIds();
+    return (globalAnnouncements||[]).filter(a=>!read.has(String(a.id))).length;
+}
+
+function updateGlobalAnnouncementBell(){
+    const badge=document.getElementById("globalNoticeBadge");
+    if(!badge)return;
+    const count=getGlobalAnnouncementUnreadCount();
+    badge.textContent=count>9?"۹+":String(count);
+    badge.hidden=count===0;
+}
+
+async function loadGlobalAnnouncements(){
+    if(globalAnnouncementsLoading)return;
+    globalAnnouncementsLoading=true;
+    try{
+        const res=await fetch(API_BASE+"/api/announcements");
+        if(!res.ok)throw new Error("bad response");
+        globalAnnouncements=await res.json();
+        if(!Array.isArray(globalAnnouncements))globalAnnouncements=[];
+    }catch(e){
+        globalAnnouncements=[];
+    }finally{
+        globalAnnouncementsLoading=false;
+        if(globalAnnouncementModalOpen)markGlobalAnnouncementsRead();
+        updateGlobalAnnouncementBell();
+        if(globalAnnouncementModalOpen)render();
+    }
+}
+
+function markGlobalAnnouncementsRead(){
+    const read=getGlobalAnnouncementReadIds();
+    (globalAnnouncements||[]).forEach(a=>read.add(String(a.id)));
+    localStorage.setItem("medib4_read_global_announcements",JSON.stringify([...read]));
+    updateGlobalAnnouncementBell();
+}
+
+function openGlobalAnnouncements(){
+    globalAnnouncementModalOpen=true;
+    if(globalAnnouncements===null){
+        globalAnnouncements=[];
+        loadGlobalAnnouncements();
+    }else{
+        markGlobalAnnouncementsRead();
+    }
+    render();
+}
+
+function closeGlobalAnnouncements(){
+    globalAnnouncementModalOpen=false;
+    markGlobalAnnouncementsRead();
+    render();
+}
+
 function renderGlobalAnnouncementModal(){
     if(!globalAnnouncementModalOpen)return "";
-    return `
-        <div class="notice-modal-backdrop" onclick="if(event.target===this)closeGlobalAnnouncements()">
-            <div class="notice-modal">
-                <button class="notice-close" onclick="closeGlobalAnnouncements()" aria-label="بستن">×</button>
-                <div class="notice-modal-icon global"><i data-lucide="bell-ring"></i></div>
-                <div class="notice-modal-kicker">اطلاعیه‌های عمومی</div>
-                <h2>آخرین اطلاعیه‌ها</h2>
-                <div class="notice-list">
-                    ${(globalAnnouncements||[]).map(a=>`<article class="notice-item">
-                        <div class="notice-item-title">${escapeHTML(a.title)}</div>
-                        <div class="notice-item-text">${escapeHTML(a.text)}</div>
-                        <div class="notice-item-date">${new Date(a.created_at).toLocaleDateString('fa-IR')}</div>
-                    </article>`).join("") || `<div class="notice-item"><div class="notice-item-text" style="text-align:center;">فعلاً اطلاعیه‌ای منتشر نشده است.</div></div>`}
-                </div>
-                <button class="notice-primary" onclick="closeGlobalAnnouncements()">متوجه شدم</button>
-            </div>
-        </div>`;
+    const items=(globalAnnouncements||[]).map(a=>`<article class="notice-item">
+        <div class="notice-item-title">${escapeHTML(a.title||"اطلاعیه")}</div>
+        <div class="notice-item-text">${escapeHTML(a.text||"")}</div>
+        <div class="notice-item-date">${a.created_at?new Date(a.created_at).toLocaleDateString('fa-IR'):""}</div>
+    </article>`).join("");
+    return `<div class="notice-modal-backdrop" onclick="if(event.target===this)closeGlobalAnnouncements()">
+        <section class="notice-modal" role="dialog" aria-modal="true" aria-label="اطلاعیه‌های عمومی">
+            <button type="button" class="notice-close" onclick="closeGlobalAnnouncements()" aria-label="بستن">×</button>
+            <div class="notice-modal-icon"><i data-lucide="bell-ring"></i></div>
+            <div class="notice-modal-kicker">اطلاع‌رسانی</div>
+            <h2>اطلاعیه‌های عمومی</h2>
+            <div class="notice-list">${globalAnnouncementsLoading?'<div class="notice-item-text" style="text-align:center">در حال دریافت اطلاعیه‌ها…</div>':(items||'<div class="notice-item-text" style="text-align:center">فعلاً اطلاعیه‌ای منتشر نشده است.</div>')}</div>
+            <button type="button" class="notice-primary" onclick="closeGlobalAnnouncements()">متوجه شدم</button>
+        </section>
+    </div>`;
 }
 
 function renderHome(){
@@ -5484,89 +5548,11 @@ function courseCard(course){
 COURSE PAGE
 ===================================================== */
 
-let globalAnnouncements = null;
-let globalAnnouncementsLoading = false;
-let globalAnnouncementModalOpen = false;
-let courseAnnouncementModalOpen = false;
-
-function getAnnouncementReadIds(){
-    try{
-        const v=JSON.parse(localStorage.getItem("medib4_read_announcements")||"[]");
-        return new Set(Array.isArray(v)?v.map(String):[]);
-    }catch{return new Set();}
-}
-
-function saveAnnouncementReadIds(set){
-    localStorage.setItem("medib4_read_announcements",JSON.stringify([...set]));
-}
-
-function markAnnouncementsRead(list){
-    const ids=getAnnouncementReadIds();
-    list.forEach(a=>ids.add(String(a.id)));
-    saveAnnouncementReadIds(ids);
-}
-
-function unreadAnnouncementCount(list){
-    const ids=getAnnouncementReadIds();
-    return list.filter(a=>!ids.has(String(a.id))).length;
-}
-
-async function loadGlobalAnnouncements(){
-    if(globalAnnouncementsLoading)return;
-    globalAnnouncementsLoading=true;
-    try{
-        const res=await fetch(API_BASE+"/api/announcements");
-        if(!res.ok)throw new Error("bad response");
-        globalAnnouncements=await res.json();
-    }catch(e){
-        globalAnnouncements=[];
-    }finally{
-        globalAnnouncementsLoading=false;
-        render();
-    }
-}
-
-function openGlobalAnnouncements(){
-    if(globalAnnouncements===null){
-        globalAnnouncements=[];
-        loadGlobalAnnouncements();
-    }
-    globalAnnouncementModalOpen=true;
-    markAnnouncementsRead(globalAnnouncements||[]);
-    render();
-}
-
-function closeGlobalAnnouncements(){
-    globalAnnouncementModalOpen=false;
-    render();
-}
-
-function openCourseAnnouncements(){
-    courseAnnouncementModalOpen=true;
-    markAnnouncementsRead(courseAnnouncements[currentCourse]||[]);
-    render();
-}
-
-function closeCourseAnnouncements(){
-    courseAnnouncementModalOpen=false;
-    const list=courseAnnouncements[currentCourse]||[];
-    markAnnouncementsRead(list);
-    render();
-}
-
 async function loadCourseAnnouncements(courseId){
     try{
         const res=await fetch(API_BASE+"/api/announcements?course="+encodeURIComponent(courseId));
         if(!res.ok) throw new Error("bad response");
         courseAnnouncements[courseId]=await res.json();
-        const list=courseAnnouncements[courseId]||[];
-        if(list.length){
-            const seen=getAnnouncementReadIds();
-            const latest=String(list[0].id);
-            if(!seen.has(latest) && currentCourse===courseId){
-                courseAnnouncementModalOpen=true;
-            }
-        }
     }catch(e){
         courseAnnouncements[courseId]=[];
     }
@@ -5575,34 +5561,21 @@ async function loadCourseAnnouncements(courseId){
 function renderCourseAnnouncements(courseId){
     const list=courseAnnouncements[courseId]||[];
     if(!list.length)return "";
-    const unread=unreadAnnouncementCount(list);
-    const modal=courseAnnouncementModalOpen && currentCourse===courseId ? `
-        <div class="notice-modal-backdrop" onclick="if(event.target===this)closeCourseAnnouncements()">
-            <div class="notice-modal course-notice-modal">
-                <button class="notice-close" onclick="closeCourseAnnouncements()" aria-label="بستن">×</button>
-                <div class="notice-modal-icon course"><i data-lucide="megaphone"></i></div>
-                <div class="notice-modal-kicker">اطلاعیه درس</div>
-                <h2>${escapeHTML(courses.find(c=>c.id===courseId)?.title||"")}</h2>
-                <div class="notice-list">
-                    ${list.map(a=>`<article class="notice-item">
-                        <div class="notice-item-title">${escapeHTML(a.title)}</div>
-                        <div class="notice-item-text">${escapeHTML(a.text)}</div>
-                        <div class="notice-item-date">${new Date(a.created_at).toLocaleDateString('fa-IR')}</div>
-                    </article>`).join("")}
-                </div>
-                <button class="notice-primary" onclick="closeCourseAnnouncements()">متوجه شدم</button>
-            </div>
-        </div>` : "";
+
     return `
-        <button type="button" class="course-notice-trigger" onclick="openCourseAnnouncements()">
-            <span class="course-notice-trigger-icon"><i data-lucide="megaphone"></i></span>
-            <span class="course-notice-trigger-main">
-                <strong>اطلاعیه‌های این درس</strong>
-                <span>${unread ? `${unread} اطلاعیه جدید` : "مشاهده اطلاعیه‌ها"}</span>
-            </span>
-            <i data-lucide="chevron-left" class="course-notice-arrow"></i>
-        </button>
-        ${modal}`;
+        <div class="card" style="margin-top:14px;">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+                <i data-lucide="megaphone" style="width:19px;height:19px;"></i>
+                <strong style="font-size:14px;">اطلاعیه‌های این درس</strong>
+            </div>
+            ${list.map(a=>`
+                <div style="padding:11px 0;${list.indexOf(a)?'border-top:1px solid var(--border);':''}">
+                    <div style="font-size:13px;font-weight:700;margin-bottom:5px;">${escapeHTML(a.title)}</div>
+                    <div style="font-size:12px;line-height:2;color:var(--muted);white-space:pre-wrap;">${escapeHTML(a.text)}</div>
+                    <div style="font-size:10px;color:var(--muted);margin-top:5px;">${new Date(a.created_at).toLocaleDateString('fa-IR')}</div>
+                </div>
+            `).join("")}
+        </div>`;
 }
 
 function openCourse(courseId){
@@ -6992,7 +6965,7 @@ function selectAnswer(index){
                 currentCourse
             );
 
-        // Snapshot the state BEFORE this answer is recorded.
+        // Capture the pre-answer state before this answer is stored.
         educationalAlreadyScored[currentQuestionIndex]=alreadyScored;
 
         if(!alreadyScored){
@@ -10502,9 +10475,10 @@ function render(){
     }
 
     if(globalAnnouncementModalOpen){
-        main.insertAdjacentHTML("beforeend", renderGlobalAnnouncementModal());
+        main.insertAdjacentHTML("beforeend",renderGlobalAnnouncementModal());
     }
 
+    updateGlobalAnnouncementBell();
     refreshIcons();
 
 }
