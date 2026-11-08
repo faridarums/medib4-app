@@ -3302,6 +3302,8 @@ body.light .result-question{
 
 /* Global announcements bell - isolated styles */
 .notice-bell-wrap{position:relative;display:flex;align-items:center;flex:0 0 auto}
+.header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.header-actions .theme-btn{margin:0}
 .notice-bell-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;position:relative;border-radius:15px;color:#c084fc;background:linear-gradient(145deg,rgba(168,85,247,.22),rgba(91,33,182,.16));border:1px solid rgba(192,132,252,.28);box-shadow:0 0 18px rgba(168,85,247,.10);transition:.2s}
 .notice-bell-btn:hover{transform:translateY(-1px)}
 .notice-bell-btn svg{width:21px;height:21px}
@@ -3315,11 +3317,11 @@ body.light .notice-bell-badge{border-color:#f7f4fb}
 .notice-modal-icon{width:50px;height:50px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:2px auto 12px;color:#fff;background:linear-gradient(135deg,#f59e0b,#ef4444)}
 .notice-modal-icon svg{width:24px;height:24px}
 .notice-modal-kicker{text-align:center;font-size:11px;color:var(--muted);margin-bottom:5px}
-.notice-modal h2{text-align:center;font-size:18px;margin:0 0 18px;color:var(--text)}
+.notice-modal h2{text-align:center;font-size:19px;line-height:1.8;margin:0 0 18px;color:var(--text);font-weight:900}
 .notice-list{display:flex;flex-direction:column;gap:10px}
 .notice-item{padding:13px 14px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid var(--border)}
-.notice-item-title{font-size:13px;font-weight:800;margin-bottom:7px;color:var(--text)}
-.notice-item-text{font-size:12px;line-height:2;color:var(--muted);white-space:pre-wrap}
+.notice-item-title{font-size:14px;font-weight:900;margin-bottom:8px;color:var(--text);line-height:1.7}
+.notice-item-text{font-size:13px;line-height:2.15;color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere}
 .notice-item-date{font-size:10px;color:var(--muted);margin-top:7px;opacity:.8}
 .notice-primary{width:100%;margin-top:16px;border:0;border-radius:13px;padding:11px;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-family:inherit;font-weight:800;cursor:pointer}
 @keyframes noticeFadeIn{from{opacity:0}to{opacity:1}}
@@ -3359,6 +3361,7 @@ HEADER
 
     </div>
 
+    <div class="header-actions">
     <div class="notice-bell-wrap">
         <button type="button" class="notice-bell-btn" onclick="openGlobalAnnouncements()" aria-label="اطلاعیه‌ها">
             <i data-lucide="bell"></i>
@@ -3374,6 +3377,7 @@ HEADER
     >
         <i data-lucide="moon"></i>
     </button>
+    </div>
 
 </header>
 
@@ -4295,253 +4299,63 @@ function hasBiometricEnrolled(){
 }
 
 async function enableBiometricLogin(){
-
-    if(!biometricAvailableCache){
-
-        showToast(
-            "این گوشی از ورود با اثرانگشت پشتیبانی نمی‌کنه."
-        );
-
-        return;
-
-    }
-
-    const password=
-        getUserPassword();
-
-    const profile=
-        getProfile();
-
-    if(!password||!profile.name){
-
-        showToast(
-            "اول باید با رمزت وارد شده باشی."
-        );
-
-        return;
-
-    }
-
+    if(!biometricAvailableCache){ showToast("این گوشی از ورود بیومتریک پشتیبانی نمی‌کنه."); return; }
+    const password=getUserPassword(), profile=getProfile(), userId=getUserId();
+    if(!password||!profile.name){ showToast("اول باید با رمزت وارد شده باشی."); return; }
     try{
-
-        const challenge=
-            crypto.getRandomValues(
-                new Uint8Array(32)
-            );
-
-        const userIdBytes=
-            new TextEncoder().encode(
-                getUserId()
-            );
-
-        const credential=
-            await navigator.credentials.create({
-                publicKey:{
-                    challenge,
-                    rp:{
-                        id:
-                            location.hostname,
-                        name:"Medib4"
-                    },
-                    user:{
-                        id:userIdBytes,
-                        name:profile.name,
-                        displayName:
-                            profile.name
-                    },
-                    pubKeyCredParams:[
-                        {type:"public-key",alg:-7},
-                        {type:"public-key",alg:-257}
-                    ],
-                    authenticatorSelection:{
-                        authenticatorAttachment:
-                            "platform",
-                        userVerification:
-                            "required"
-                    },
-                    timeout:60000,
-                    attestation:"none"
-                }
-            });
-
-        localStorage.setItem(
-            STORAGE.biometricCredentialId,
-            bufToBase64(credential.rawId)
-        );
-
-        localStorage.setItem(
-            STORAGE.biometricVaultUserId,
-            getUserId()
-        );
-
-        localStorage.setItem(
-            STORAGE.biometricVaultPassword,
-            password
-        );
-
-        localStorage.setItem(
-            STORAGE.biometricVaultName,
-            profile.name
-        );
-
-        showToast(
-            "ورود با اثرانگشت فعال شد."
-        );
-
-        profileMenuOpen=false;
-
-        render();
-
-    }catch(e){
-
-        console.error(
-            "biometric enroll error",
-            e
-        );
-
-        showToast(
-            "فعال‌سازی ناموفق بود: "+
-            (e&&e.name?e.name:"") +
-            (
-                e&&e.message
-                ?(" — "+e.message)
-                :""
-            )
-        );
-
-    }
-
+        const optRes=await fetch(API_BASE+"/api/webauthn/register/options",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:userId,password,origin:location.origin})});
+        const opts=await optRes.json(); if(!optRes.ok) throw new Error(opts.error||"دریافت تنظیمات ورود بیومتریک ناموفق بود.");
+        const credential=await navigator.credentials.create({publicKey:{
+            challenge:base64UrlToBuf(opts.challenge),
+            rp:opts.rp,
+            user:{id:base64UrlToBuf(opts.user.id),name:opts.user.name,displayName:opts.user.displayName},
+            pubKeyCredParams:[{type:"public-key",alg:-7}],
+            authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"required",userVerification:"required"},
+            timeout:60000,attestation:"none"
+        }});
+        if(!credential)throw new Error("ثبت لغو شد.");
+        const response=credential.response;
+        const verifyRes=await fetch(API_BASE+"/api/webauthn/register/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+            user_id:userId,credential:{id:credential.id,type:credential.type,response:{clientDataJSON:bufToBase64Url(response.clientDataJSON),attestationObject:bufToBase64Url(response.attestationObject)}}
+        })});
+        const data=await verifyRes.json(); if(!verifyRes.ok)throw new Error(data.error||"ثبت Passkey ناموفق بود.");
+        localStorage.setItem(STORAGE.biometricCredentialId,data.credential_id||credential.id);
+        localStorage.setItem(STORAGE.biometricVaultUserId,userId);
+        localStorage.setItem(STORAGE.biometricVaultName,profile.name);
+        localStorage.removeItem(STORAGE.biometricVaultPassword);
+        showToast("ورود با اثر انگشت/تشخیص چهره فعال شد."); profileMenuOpen=false; render();
+    }catch(e){ console.error("passkey enroll error",e); showToast("فعال‌سازی ناموفق بود: "+(e&&e.message?e.message:"")); }
 }
 
 function disableBiometricLogin(){
-
-    localStorage.removeItem(
-        STORAGE.biometricCredentialId
-    );
-
-    localStorage.removeItem(
-        STORAGE.biometricVaultUserId
-    );
-
-    localStorage.removeItem(
-        STORAGE.biometricVaultPassword
-    );
-
-    localStorage.removeItem(
-        STORAGE.biometricVaultName
-    );
-
-    showToast(
-        "ورود با اثرانگشت غیرفعال شد."
-    );
-
-    profileMenuOpen=false;
-
-    render();
-
+    localStorage.removeItem(STORAGE.biometricCredentialId); localStorage.removeItem(STORAGE.biometricVaultUserId); localStorage.removeItem(STORAGE.biometricVaultPassword); localStorage.removeItem(STORAGE.biometricVaultName);
+    showToast("ورود بیومتریک غیرفعال شد."); profileMenuOpen=false; render();
 }
 
 async function loginWithBiometric(){
-
-    const credentialId=
-        localStorage.getItem(
-            STORAGE.biometricCredentialId
-        );
-
-    const vaultUserId=
-        localStorage.getItem(
-            STORAGE.biometricVaultUserId
-        );
-
-    const vaultPassword=
-        localStorage.getItem(
-            STORAGE.biometricVaultPassword
-        );
-
-    if(
-        !credentialId||
-        !vaultUserId||
-        !vaultPassword
-    ){
-
-        showToast(
-            "اثرانگشتی روی این گوشی ثبت نشده."
-        );
-
-        return;
-
-    }
-
+    if(!biometricAvailableCache){ showToast("ورود بیومتریک روی این دستگاه در دسترس نیست."); return; }
     try{
+        const optRes=await fetch(API_BASE+"/api/webauthn/login/options",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin:location.origin})});
+        const opts=await optRes.json(); if(!optRes.ok)throw new Error(opts.error||"دریافت درخواست ورود ناموفق بود.");
+        const credential=await navigator.credentials.get({publicKey:{challenge:base64UrlToBuf(opts.challenge),rpId:opts.rpId,userVerification:"required",timeout:60000}});
+        if(!credential)throw new Error("ورود لغو شد.");
+        const r=credential.response;
+        const verifyRes=await fetch(API_BASE+"/api/webauthn/login/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({credential:{id:credential.id,type:credential.type,response:{clientDataJSON:bufToBase64Url(r.clientDataJSON),authenticatorData:bufToBase64Url(r.authenticatorData),signature:bufToBase64Url(r.signature),userHandle:r.userHandle?bufToBase64Url(r.userHandle):null}}})});
+        const data=await verifyRes.json(); if(!verifyRes.ok)throw new Error(data.error||"تأیید Passkey ناموفق بود.");
+        localStorage.setItem(STORAGE.userId,data.user_id);
+        localStorage.setItem(STORAGE.biometricCredentialId,credential.id);
+        const profileName=localStorage.getItem(STORAGE.biometricVaultName)||"";
+        saveProfile({name:profileName});
+        showToast("خوش اومدی!"); render();
+    }catch(e){ console.error("passkey login error",e); showToast("ورود بیومتریک ناموفق بود: "+(e&&e.message?e.message:"")); }
+}
 
-        const challenge=
-            crypto.getRandomValues(
-                new Uint8Array(32)
-            );
-
-        await navigator.credentials.get({
-            publicKey:{
-                challenge,
-                rpId:
-                    location.hostname,
-                allowCredentials:[
-                    {
-                        id:base64ToBuf(
-                            credentialId
-                        ),
-                        type:"public-key",
-                        transports:[
-                            "internal"
-                        ]
-                    }
-                ],
-                userVerification:
-                    "required",
-                timeout:60000
-            }
-        });
-
-        localStorage.setItem(
-            STORAGE.userId,
-            vaultUserId
-        );
-
-        setUserPassword(
-            vaultPassword
-        );
-
-        saveProfile({
-            name:
-                localStorage.getItem(
-                    STORAGE.biometricVaultName
-                )||""
-        });
-
-        showToast(
-            "خوش اومدی!"
-        );
-
-        render();
-
-    }catch(e){
-
-        console.error(
-            "biometric login error",
-            e
-        );
-
-        showToast(
-            "تأیید ناموفق بود: "+
-            (e&&e.name?e.name:"") +
-            (
-                e&&e.message
-                ?(" — "+e.message)
-                :""
-            )
-        );
-
-    }
-
+function bufToBase64Url(buf){
+    let s=""; const a=new Uint8Array(buf); for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));
+    return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+}
+function base64UrlToBuf(b64){
+    const s=String(b64||"").replace(/-/g,"+").replace(/_/g,"/")+"===".slice((String(b64||"").length+3)%4); const bin=atob(s); const out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i); return out;
 }
 
 /* =====================================================
@@ -5349,7 +5163,7 @@ function renderGlobalAnnouncementModal(){
             <button type="button" class="notice-close" onclick="closeGlobalAnnouncements()" aria-label="بستن">×</button>
             <div class="notice-modal-icon"><i data-lucide="bell-ring"></i></div>
             <div class="notice-modal-kicker">اطلاع‌رسانی</div>
-            <h2>اطلاعیه‌های عمومی</h2>
+            <h2>${globalAnnouncements&&globalAnnouncements.length?escapeHTML(globalAnnouncements[0].title||"اطلاعیه"):"اطلاعیه"}</h2>
             <div class="notice-list">${globalAnnouncementsLoading?'<div class="notice-item-text" style="text-align:center">در حال دریافت اطلاعیه‌ها…</div>':(items||'<div class="notice-item-text" style="text-align:center">فعلاً اطلاعیه‌ای منتشر نشده است.</div>')}</div>
             <button type="button" class="notice-primary" onclick="closeGlobalAnnouncements()">متوجه شدم</button>
         </section>
@@ -5561,20 +5375,23 @@ async function loadCourseAnnouncements(courseId){
 function renderCourseAnnouncements(courseId){
     const list=courseAnnouncements[courseId]||[];
     if(!list.length)return "";
-
+    const title=list[0].title||"اطلاعیه";
     return `
-        <div class="card" style="margin-top:14px;">
-            <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
-                <i data-lucide="megaphone" style="width:19px;height:19px;"></i>
-                <strong style="font-size:14px;">اطلاعیه‌های این درس</strong>
-            </div>
-            ${list.map(a=>`
-                <div style="padding:11px 0;${list.indexOf(a)?'border-top:1px solid var(--border);':''}">
-                    <div style="font-size:13px;font-weight:700;margin-bottom:5px;">${escapeHTML(a.title)}</div>
-                    <div style="font-size:12px;line-height:2;color:var(--muted);white-space:pre-wrap;">${escapeHTML(a.text)}</div>
-                    <div style="font-size:10px;color:var(--muted);margin-top:5px;">${new Date(a.created_at).toLocaleDateString('fa-IR')}</div>
+        <div class="notice-modal-backdrop" role="dialog" aria-modal="true" aria-label="اطلاعیه درس">
+            <section class="notice-modal" onclick="event.stopPropagation()">
+                <button type="button" class="notice-close" onclick="this.closest('.notice-modal-backdrop').remove()" aria-label="بستن">×</button>
+                <div class="notice-modal-icon"><i data-lucide="megaphone"></i></div>
+                <div class="notice-modal-kicker">اطلاعیه درس</div>
+                <h2>${escapeHTML(title)}</h2>
+                <div class="notice-list">
+                    ${list.map((a,i)=>`<article class="notice-item">
+                        ${i?`<div class="notice-item-title">${escapeHTML(a.title||"اطلاعیه")}</div>`:""}
+                        <div class="notice-item-text">${escapeHTML(a.text||"")}</div>
+                        <div class="notice-item-date">${a.created_at?new Date(a.created_at).toLocaleDateString('fa-IR'):""}</div>
+                    </article>`).join("")}
                 </div>
-            `).join("")}
+                <button type="button" class="notice-primary" onclick="this.closest('.notice-modal-backdrop').remove()">متوجه شدم</button>
+            </section>
         </div>`;
 }
 
