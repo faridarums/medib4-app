@@ -4337,7 +4337,20 @@ async function loginWithBiometric(){
     try{
         const optRes=await fetch(API_BASE+"/api/webauthn/login/options",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin:location.origin})});
         const opts=await optRes.json(); if(!optRes.ok)throw new Error(opts.error||"دریافت درخواست ورود ناموفق بود.");
-        const credential=await navigator.credentials.get({publicKey:{challenge:base64UrlToBuf(opts.challenge),rpId:opts.rpId,userVerification:"required",timeout:60000}});
+        const storedCredentialId=localStorage.getItem(STORAGE.biometricCredentialId)||"";
+        const publicKeyOptions={
+            challenge:base64UrlToBuf(opts.challenge),
+            rpId:opts.rpId,
+            userVerification:"required",
+            timeout:60000
+        };
+        // اگر شناسهٔ Passkey روی همین دستگاه ذخیره شده، آن را مستقیماً
+        // به WebAuthn می‌دهیم تا Google Password Manager همان Passkey را پیدا کند.
+        // اگر localStorage پاک شده باشد، حالت discoverable قبلی همچنان قابل استفاده است.
+        if(storedCredentialId){
+            publicKeyOptions.allowCredentials=[{type:"public-key",id:base64UrlToBuf(storedCredentialId)}];
+        }
+        const credential=await navigator.credentials.get({publicKey:publicKeyOptions});
         if(!credential)throw new Error("ورود لغو شد.");
         const r=credential.response;
         const verifyRes=await fetch(API_BASE+"/api/webauthn/login/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({credential:{id:credential.id,type:credential.type,response:{clientDataJSON:bufToBase64Url(r.clientDataJSON),authenticatorData:bufToBase64Url(r.authenticatorData),signature:bufToBase64Url(r.signature),userHandle:r.userHandle?bufToBase64Url(r.userHandle):null}}})});
@@ -9512,13 +9525,20 @@ function renderComments(questionId){
 
                     </div>
 
-                    <div>
+                    <div style="white-space:pre-wrap;">
 
                         ${escapeHTML(
                             comment.text
                         )}
 
                     </div>
+
+                    ${(comment.replies || []).map(reply => `
+                        <div style="margin-top:9px;margin-right:10px;padding:8px 10px;border-radius:10px;background:rgba(168,85,247,.10);border-right:2px solid #a855f7;">
+                            <div style="font-size:10px;font-weight:700;color:#b879f5;margin-bottom:4px;">پاسخ ادمین</div>
+                            <div style="font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap;">${escapeHTML(reply.text)}</div>
+                        </div>
+                    `).join("")}
 
                 </div>
 

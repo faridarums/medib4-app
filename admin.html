@@ -775,14 +775,24 @@ async function renderCommentsTab(el) {
     <div class="card">
       <h3>آخرین نظرات (${comments.length})</h3>
       ${comments.length ? comments.map(c => `
-        <div class="item">
-          <div class="item-main">
+        <div class="item" style="align-items:flex-start;">
+          <div class="item-main" style="min-width:0;">
             <div class="item-title">${escapeHTML(c.name || "کاربر")}</div>
             <div class="item-sub">سوال: ${escapeHTML(c.question_id)} — ${new Date(c.created_at).toLocaleString('fa-IR')}</div>
-            <div class="muted-small" style="margin-top:6px;color:var(--text);">${escapeHTML(c.text)}</div>
+            <div class="muted-small" style="margin-top:6px;color:var(--text);white-space:pre-wrap;">${escapeHTML(c.text)}</div>
+            ${(c.replies || []).map(r => `
+              <div style="margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(168,85,247,.10);border:1px solid rgba(168,85,247,.25);">
+                <div style="font-size:11px;color:var(--accent,#a855f7);margin-bottom:4px;">پاسخ ادمین · ${new Date(r.created_at).toLocaleString('fa-IR')}</div>
+                <div style="font-size:13px;color:var(--text);white-space:pre-wrap;">${escapeHTML(r.text)}</div>
+              </div>
+            `).join("")}
+            <div style="display:flex;gap:8px;align-items:flex-end;margin-top:10px;">
+              <textarea id="commentReply-${c.id}" rows="2" placeholder="پاسخ ادمین به این نظر..." style="flex:1;min-width:0;resize:vertical;"></textarea>
+              <button class="btn btn-add" style="white-space:nowrap;" onclick="sendCommentReply(${c.id})">ارسال پاسخ</button>
+            </div>
           </div>
           <div class="item-actions">
-            <button class="icon-btn danger" onclick="deleteComment(${c.id})"><i data-lucide="trash-2"></i></button>
+            <button class="icon-btn danger" onclick="deleteComment(${c.id})" title="حذف نظر"><i data-lucide="trash-2"></i></button>
           </div>
         </div>
       `).join("") : `<div class="empty">هنوز نظری ثبت نشده.</div>`}
@@ -867,6 +877,25 @@ async function dismissReport(id) {
   if (!confirmed) return;
   await api("/api/admin/reports/" + id, { method: "DELETE" });
   renderTabContent();
+}
+
+async function sendCommentReply(id) {
+  const input = document.getElementById("commentReply-" + id);
+  const text = input ? input.value.trim() : "";
+  if (!text) {
+    showToast("متن پاسخ را وارد کنید.");
+    return;
+  }
+  try {
+    await api("/api/admin/comments/" + id + "/replies", {
+      method: "POST",
+      body: JSON.stringify({ text })
+    });
+    showToast("پاسخ ثبت شد.");
+    await renderTabContent();
+  } catch (e) {
+    showToast(e.message || "ثبت پاسخ ناموفق بود.");
+  }
 }
 
 async function deleteComment(id) {
