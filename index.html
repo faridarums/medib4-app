@@ -4234,36 +4234,32 @@ function setUserPassword(pw){
 BIOMETRIC LOGIN (WebAuthn — device-bound, same model as banking apps)
 ===================================================== */
 
+// WebAuthn availability is separate from platform-authenticator availability.
+// Some Android Telegram WebViews expose WebAuthn but cannot show the platform prompt;
+// in that case the login button can open the same origin in the external browser.
 let biometricAvailableCache=false;
+let biometricPlatformAvailableCache=false;
 
 async function checkBiometricAvailable(){
-
-    try{
-
-        if(
-            !window.PublicKeyCredential||
-            !PublicKeyCredential.
-                isUserVerifyingPlatformAuthenticatorAvailable
-        ){
-
-            biometricAvailableCache=false;
-
-        }else{
-
-            biometricAvailableCache=
-                await PublicKeyCredential.
-                    isUserVerifyingPlatformAuthenticatorAvailable();
-
-        }
-
-    }catch{
-
-        biometricAvailableCache=false;
-
+    biometricAvailableCache=!!(window.isSecureContext && window.PublicKeyCredential);
+    biometricPlatformAvailableCache=false;
+    if(biometricAvailableCache && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+        try{ biometricPlatformAvailableCache=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }
+        catch{ biometricPlatformAvailableCache=false; }
     }
-
     render();
+}
 
+function openPasskeyInExternalBrowser(){
+    try{
+        const tg=window.Telegram&&window.Telegram.WebApp;
+        if(tg&&typeof tg.openLink==='function'){
+            tg.openLink(location.href);
+            showToast("برای ورود با اثر انگشت، صفحه در مرورگر باز شد.");
+            return true;
+        }
+    }catch(e){ console.warn('Could not open external browser',e); }
+    return false;
 }
 
 function bufToBase64(buf){
@@ -4299,7 +4295,11 @@ function hasBiometricEnrolled(){
 }
 
 async function enableBiometricLogin(){
-    if(!biometricAvailableCache){ showToast("این گوشی از ورود بیومتریک پشتیبانی نمی‌کنه."); return; }
+    if(!biometricAvailableCache){ showToast("برای فعال‌سازی Passkey، صفحه را در مرورگر امن مثل Chrome باز کن."); return; }
+    if(!biometricPlatformAvailableCache){
+        if(openPasskeyInExternalBrowser()) return;
+        showToast("قفل اثر انگشت/تشخیص چهره در این محیط در دسترس نیست."); return;
+    }
     const password=getUserPassword(), profile=getProfile(), userId=getUserId();
     if(!password||!profile.name){ showToast("اول باید با رمزت وارد شده باشی."); return; }
     try{
@@ -4333,23 +4333,22 @@ function disableBiometricLogin(){
 }
 
 async function loginWithBiometric(){
-    if(!biometricAvailableCache){ showToast("ورود بیومتریک روی این دستگاه در دسترس نیست."); return; }
+    if(!biometricAvailableCache){ showToast("برای ورود با Passkey، صفحه را در مرورگر امن مثل Chrome باز کن."); return; }
+    if(window.Telegram&&window.Telegram.WebApp&&typeof window.Telegram.WebApp.openLink==='function'){
+        if(openPasskeyInExternalBrowser()) return;
+    }
     try{
         const optRes=await fetch(API_BASE+"/api/webauthn/login/options",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin:location.origin})});
         const opts=await optRes.json(); if(!optRes.ok)throw new Error(opts.error||"دریافت درخواست ورود ناموفق بود.");
-        const storedCredentialId=localStorage.getItem(STORAGE.biometricCredentialId)||"";
         const publicKeyOptions={
             challenge:base64UrlToBuf(opts.challenge),
             rpId:opts.rpId,
             userVerification:"required",
             timeout:60000
         };
-        // اگر شناسهٔ Passkey روی همین دستگاه ذخیره شده، آن را مستقیماً
-        // به WebAuthn می‌دهیم تا Google Password Manager همان Passkey را پیدا کند.
-        // اگر localStorage پاک شده باشد، حالت discoverable قبلی همچنان قابل استفاده است.
-        if(storedCredentialId){
-            publicKeyOptions.allowCredentials=[{type:"public-key",id:base64UrlToBuf(storedCredentialId)}];
-        }
+        // Intentionally omit allowCredentials: use a discoverable Passkey so
+        // Google Password Manager can find it even after local app data is cleared
+        // or the user opens the Mini App in a different browser context.
         const credential=await navigator.credentials.get({publicKey:publicKeyOptions});
         if(!credential)throw new Error("ورود لغو شد.");
         const r=credential.response;
@@ -4357,7 +4356,7 @@ async function loginWithBiometric(){
         const data=await verifyRes.json(); if(!verifyRes.ok)throw new Error(data.error||"تأیید Passkey ناموفق بود.");
         localStorage.setItem(STORAGE.userId,data.user_id);
         localStorage.setItem(STORAGE.biometricCredentialId,credential.id);
-        const profileName=localStorage.getItem(STORAGE.biometricVaultName)||"";
+        const profileName=data.name||localStorage.getItem(STORAGE.biometricVaultName)||"";
         saveProfile({name:profileName});
         showToast("خوش اومدی!"); render();
     }catch(e){ console.error("passkey login error",e); showToast("ورود بیومتریک ناموفق بود: "+(e&&e.message?e.message:"")); }
@@ -8041,8 +8040,7 @@ function renderAuthForm(profile){
             </button>
 
             ${
-                biometricAvailableCache&&
-                hasBiometricEnrolled()
+                biometricAvailableCache
                 ?`
 
                 <button
@@ -8551,7 +8549,7 @@ async function handleAuthSubmit(){
         render();
 
         if(
-            biometricAvailableCache&&
+            biometricPlatformAvailableCache&&
             !hasBiometricEnrolled()
         ){
 
