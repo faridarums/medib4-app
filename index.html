@@ -3781,7 +3781,6 @@ let remainingSeconds=0;
 
 let quizFinished=false;
 
-let historyStack=[];
 
 let educationalScored=[];
 let educationalAlreadyScored=[];
@@ -5247,7 +5246,8 @@ function setNav(active){
 
 }
 
-// جلوگیری از اجرای دوباره‌ی بازگشت در اثر هم‌زمانی کلیک داخلی و Back تلگرام
+// یک مسیر بازگشت قطعی برای هر صفحه؛ از historyStack قدیمی استفاده نمی‌کنیم
+// چون تغییر مستقیم صفحه (مثلاً خروج از آزمون) می‌توانست ورودی تکراری بسازد.
 let backNavigationLocked=false;
 let telegramBackHandlerBound=false;
 
@@ -5266,6 +5266,8 @@ function bindTelegramBackButton(){
         const tg=window.Telegram&&window.Telegram.WebApp;
         const back=tg&&tg.BackButton;
         if(!back || telegramBackHandlerBound)return;
+        // قبل از ثبت، handler قبلی همین تابع را حذف می‌کنیم تا دوبار ثبت نشود.
+        try{back.offClick(goBack);}catch(e){}
         back.onClick(goBack);
         telegramBackHandlerBound=true;
         syncTelegramBackButton();
@@ -5273,48 +5275,74 @@ function bindTelegramBackButton(){
 }
 
 function navigate(screen,data=null){
-
-    if(currentScreen!==screen){
-        // فقط یک ورودی از هر صفحه‌ی متوالی نگه می‌داریم؛ رندر مجدد نباید تاریخچه بسازد.
-        if(historyStack[historyStack.length-1]!==currentScreen){
-            historyStack.push(currentScreen);
-        }
+    if(!screen || screen===currentScreen){
+        if(data!==null) render(data);
+        return;
     }
-
     currentScreen=screen;
     render(data);
     syncTelegramBackButton();
-
 }
 
 function goBack(){
-
-    // اگر دو منبع بازگشت تقریباً هم‌زمان فعال شدند، فقط یکی اجرا شود.
+    // از اجرای دوباره‌ی یک لمس جلوگیری می‌کند؛ اما مسیر صفحه به صفحه قطعی است.
     if(backNavigationLocked)return;
     backNavigationLocked=true;
-    setTimeout(()=>{backNavigationLocked=false;},500);
+    setTimeout(()=>{backNavigationLocked=false;},650);
 
-    if(timerInterval){
+    if(currentScreen==="home")return;
+
+    const leavingQuiz=currentScreen==="quiz";
+    if(leavingQuiz && timerInterval){
         clearInterval(timerInterval);
         timerInterval=null;
     }
 
-    let previous=null;
-    while(historyStack.length && !previous){
-        const candidate=historyStack.pop();
-        if(candidate && candidate!==currentScreen) previous=candidate;
+    let previous="home";
+    switch(currentScreen){
+        case "courses":
+            previous="home";
+            break;
+        case "genderSelect":
+            previous="courses";
+            break;
+        case "course":
+            previous=GENDER_SPLIT_COURSES.includes(currentCourse) && currentGender
+                ? "genderSelect"
+                : "courses";
+            break;
+        case "quiz":
+        case "result":
+            previous="course";
+            break;
+        case "profile":
+            previous="home";
+            break;
+        case "messages":
+        case "leaderboard":
+        case "bookmarks":
+            previous="profile";
+            break;
+        case "search":
+        default:
+            previous="home";
+            break;
     }
 
-    // خروج از فهرست درس‌ها همیشه مستقیم به خانه برمی‌گردد.
-    if(currentScreen==="courses" || !previous){
-        goHome();
-        return;
+    // پاک‌کردن stateهای موقت فقط هنگام خروج از آزمون
+    if(leavingQuiz){
+        quizFinished=true;
+        remainingSeconds=0;
     }
 
     currentScreen=previous;
+    if(previous==="home"){
+        currentCourse=null;
+        const input=document.getElementById("searchInput");
+        if(input)input.value="";
+    }
     render();
     syncTelegramBackButton();
-
 }
 
 function goHome(){
@@ -5329,7 +5357,6 @@ function goHome(){
 
     }
 
-    historyStack=[];
 
     currentScreen="home";
 
@@ -5364,7 +5391,6 @@ function showProfile(){
 
     }
 
-    historyStack=[];
 
     currentScreen="profile";
 
