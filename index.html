@@ -17,6 +17,7 @@
 >
 
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
 
@@ -3820,6 +3821,12 @@ const STORAGE={
     passkeyAuthenticated:
         "medib4_passkey_authenticated",
 
+    telegramBiometricEnabled:
+        "medib4_telegram_biometric_enabled",
+
+    telegramBiometricUserId:
+        "medib4_telegram_biometric_user_id",
+
     scoredQuestions:
         "medib4_scored_questions"
 
@@ -4243,8 +4250,44 @@ BIOMETRIC LOGIN (WebAuthn — device-bound, same model as banking apps)
 // in that case the login button can open the same origin in the external browser.
 let biometricAvailableCache=false;
 let biometricPlatformAvailableCache=false;
+let telegramBiometricManager=null;
+let telegramBiometricAvailableCache=false;
+let telegramBiometricTokenSavedCache=false;
+let telegramBiometricSessionToken="";
+
+function syncTelegramBiometricState(){
+    telegramBiometricAvailableCache=!!(telegramBiometricManager && telegramBiometricManager.isBiometricAvailable);
+    telegramBiometricTokenSavedCache=!!(telegramBiometricManager && telegramBiometricManager.isBiometricTokenSaved);
+    if(telegramBiometricTokenSavedCache) localStorage.setItem(STORAGE.telegramBiometricEnabled,"1");
+    else if(telegramBiometricManager){
+        localStorage.removeItem(STORAGE.telegramBiometricEnabled);
+        localStorage.removeItem(STORAGE.telegramBiometricUserId);
+    }
+}
+
+function canShowBiometricSettings(){
+    return telegramBiometricAvailableCache || biometricAvailableCache;
+}
+
+function canShowBiometricLogin(){
+    return (telegramBiometricAvailableCache && (telegramBiometricTokenSavedCache || localStorage.getItem(STORAGE.telegramBiometricEnabled)==="1")) || (biometricAvailableCache && biometricPlatformAvailableCache);
+}
 
 async function checkBiometricAvailable(){
+    const tg=window.Telegram&&window.Telegram.WebApp;
+    telegramBiometricManager=tg&&tg.BiometricManager?tg.BiometricManager:null;
+    if(telegramBiometricManager && typeof telegramBiometricManager.init==="function"){
+        try{
+            await new Promise(resolve=>{
+                if(telegramBiometricManager.isInited){resolve();return;}
+                telegramBiometricManager.init(()=>resolve());
+            });
+            syncTelegramBiometricState();
+            if(tg && typeof tg.onEvent==="function"){
+                tg.onEvent("biometricManagerUpdated",()=>{syncTelegramBiometricState();render();});
+            }
+        }catch(e){console.warn("Telegram BiometricManager init failed",e);}
+    }
     biometricAvailableCache=!!(window.isSecureContext && window.PublicKeyCredential);
     biometricPlatformAvailableCache=false;
     if(biometricAvailableCache && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
@@ -4286,19 +4329,123 @@ function base64ToBuf(b64){
 }
 
 function hasBiometricEnrolled(){
+    if(telegramBiometricAvailableCache && telegramBiometricTokenSavedCache){
+        const currentUserId=localStorage.getItem(STORAGE.userId);
+        const enrolledUserId=localStorage.getItem(STORAGE.telegramBiometricUserId);
+        return !currentUserId || !enrolledUserId || currentUserId===enrolledUserId;
+    }
+    return !!(localStorage.getItem(STORAGE.biometricCredentialId) && localStorage.getItem(STORAGE.biometricVaultUserId));
+}
 
-    return !!(
-        localStorage.getItem(
-            STORAGE.biometricCredentialId
-        )&&
-        localStorage.getItem(
-            STORAGE.biometricVaultUserId
-        )
-    );
+function telegramBiometricRequest(method, params){
+    return new Promise((resolve,reject)=>{
+        if(!telegramBiometricManager || typeof telegramBiometricManager[method]!=="function"){
+            reject(new Error("قابلیت بیومتریک تلگرام در این نسخه در دسترس نیست."));return;
+        }
+        try{
+            if(method==="requestAccess") telegramBiometricManager.requestAccess(params||{},granted=>resolve(!!granted));
+            else if(method==="authenticate") telegramBiometricManager.authenticate(params||{},(authenticated,token)=>resolve({authenticated:!!authenticated,token:token||""}));
+            else if(method==="updateBiometricToken") telegramBiometricManager.updateBiometricToken(String(params||""),updated=>resolve(!!updated));
+            else reject(new Error("درخواست بیومتریک نامعتبر است."));
+        }catch(e){reject(e);}
+    });
+}
 
+async function enableTelegramBiometricLogin(){
+    if(!telegramBiometricAvailableCache || !telegramBiometricManager) throw new Error("اثر انگشت در نسخه فعلی تلگرام یا دستگاه در دسترس نیست.");
+    const password=getUserPassword(), profile=getProfile(), userId=getUserId();
+    if(!password || !profile.name) throw new Error("برای فعال‌سازی اولیه، ابتدا با نام و رمز حساب وارد شو.");
+    if(!telegramBiometricManager.isAccessGranted){
+        if(telegramBiometricManager.isAccessRequested && typeof telegramBiometricManager.openSettings==="function"){
+            telegramBiometricManager.openSettings();
+            throw new Error("دسترسی بیومتریک قبلاً رد شده است؛ اجازه Medib4 را در تنظیمات تلگرام فعال کن.");
+        }
+        const granted=await telegramBiometricRequest("requestAccess",{reason:"برای ورود امن و سریع به حساب Medib4"});
+        syncTelegramBiometricState();
+        if(!granted) throw new Error("اجازه استفاده از اثر انگشت داده نشد.");
+    }
+    const deviceId=String(telegramBiometricManager.deviceId||"");
+    if(!deviceId) throw new Error("شناسه امن دستگاه از تلگرام دریافت نشد.");
+    const token=bufToBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+    const enrollRes=await fetch(API_BASE+"/api/telegram-biometric/enroll",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({user_id:userId,password,device_id:deviceId,token})
+    });
+    const enrollData=await enrollRes.json();
+    if(!enrollRes.ok) throw new Error(enrollData.error||"ثبت ورود بیومتریک در سرور ناموفق بود.");
+    const saved=await telegramBiometricRequest("updateBiometricToken",token);
+    if(!saved){
+        try{await fetch(API_BASE+"/api/telegram-biometric/revoke",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({device_id:deviceId,token})});}catch{}
+        throw new Error("تلگرام نتوانست کلید ورود را در فضای امن دستگاه ذخیره کند.");
+    }
+    telegramBiometricSessionToken=token;
+    syncTelegramBiometricState();
+    localStorage.setItem(STORAGE.telegramBiometricEnabled,"1");
+    localStorage.setItem(STORAGE.telegramBiometricUserId,userId);
+    showToast("ورود با اثر انگشت تلگرام فعال شد.");
+    profileMenuOpen=false;render();
+}
+
+async function loginWithTelegramBiometric(){
+    if(!telegramBiometricManager || !telegramBiometricAvailableCache) throw new Error("بیومتریک تلگرام در این دستگاه در دسترس نیست.");
+    syncTelegramBiometricState();
+    if(!telegramBiometricTokenSavedCache) throw new Error("برای این دستگاه ورود بیومتریک فعال نشده؛ یک‌بار با رمز وارد شو و آن را فعال کن.");
+    const auth=await telegramBiometricRequest("authenticate",{reason:"برای ورود به حساب Medib4 اثر انگشت یا تشخیص چهره را تأیید کن"});
+    if(!auth.authenticated || !auth.token) throw new Error("تأیید اثر انگشت انجام نشد.");
+    const deviceId=String(telegramBiometricManager.deviceId||"");
+    const res=await fetch(API_BASE+"/api/telegram-biometric/login",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({device_id:deviceId,token:auth.token})
+    });
+    const data=await res.json();
+    if(!res.ok || !data.user_id) throw new Error(data.error||"این کلید بیومتریک به حسابی متصل نیست.");
+    telegramBiometricSessionToken=auth.token;
+    localStorage.setItem(STORAGE.userId,data.user_id);
+    localStorage.setItem(STORAGE.passkeyAuthenticated,"1");
+    localStorage.setItem(STORAGE.telegramBiometricEnabled,"1");
+    localStorage.setItem(STORAGE.telegramBiometricUserId,data.user_id);
+    saveProfile({name:String(data.name||"")});
+    showToast("با اثر انگشت تلگرام وارد شدی؛ خوش اومدی!");
+    render();
+}
+
+async function disableTelegramBiometricLogin(){
+    if(!telegramBiometricManager){
+        localStorage.removeItem(STORAGE.telegramBiometricEnabled);
+        showToast("ورود بیومتریک تلگرام غیرفعال شد.");profileMenuOpen=false;render();return;
+    }
+    const deviceId=String(telegramBiometricManager.deviceId||"");
+    let token=telegramBiometricSessionToken;
+    if(telegramBiometricTokenSavedCache && !token){
+        const auth=await telegramBiometricRequest("authenticate",{reason:"برای غیرفعال کردن ورود بیومتریک Medib4 هویتت را تأیید کن"});
+        if(!auth.authenticated || !auth.token) throw new Error("تأیید هویت انجام نشد.");
+        token=auth.token;
+    }
+    const body={device_id:deviceId};
+    if(token) body.token=token;
+    else if(getUserPassword()){body.user_id=getUserId();body.password=getUserPassword();}
+    else {localStorage.removeItem(STORAGE.telegramBiometricEnabled);throw new Error("برای حذف کلید، دوباره با رمز حساب وارد شو.");}
+    const res=await fetch(API_BASE+"/api/telegram-biometric/revoke",{
+        method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||"حذف کلید از سرور ناموفق بود.");
+    if(telegramBiometricTokenSavedCache){
+        const removed=await telegramBiometricRequest("updateBiometricToken","");
+        if(!removed) throw new Error("کلید از سرور حذف شد اما تلگرام نتوانست آن را از دستگاه پاک کند.");
+    }
+    telegramBiometricSessionToken="";
+    syncTelegramBiometricState();
+    localStorage.removeItem(STORAGE.telegramBiometricEnabled);
+    localStorage.removeItem(STORAGE.telegramBiometricUserId);
+    showToast("ورود با اثر انگشت تلگرام غیرفعال شد.");profileMenuOpen=false;render();
 }
 
 async function enableBiometricLogin(){
+    if(telegramBiometricAvailableCache){
+        try{await enableTelegramBiometricLogin();}catch(e){console.error("Telegram biometric enroll",e);showToast(e.message||"فعال‌سازی ورود بیومتریک ناموفق بود.");}
+        return;
+    }
     if(!biometricAvailableCache){ showToast("برای فعال‌سازی Passkey، صفحه را در مرورگر امن مثل Chrome باز کن."); return; }
     if(!biometricPlatformAvailableCache){
         if(openPasskeyInExternalBrowser()) return;
@@ -4331,7 +4478,11 @@ async function enableBiometricLogin(){
     }catch(e){ console.error("passkey enroll error",e); showToast("فعال‌سازی ناموفق بود: "+(e&&e.message?e.message:"")); }
 }
 
-function disableBiometricLogin(){
+async function disableBiometricLogin(){
+    if(telegramBiometricAvailableCache && (telegramBiometricTokenSavedCache || localStorage.getItem(STORAGE.telegramBiometricEnabled)==="1")){
+        try{await disableTelegramBiometricLogin();}catch(e){console.error("Telegram biometric revoke",e);showToast(e.message||"غیرفعال‌سازی ورود بیومتریک ناموفق بود.");}
+        return;
+    }
     localStorage.removeItem(STORAGE.biometricCredentialId); localStorage.removeItem(STORAGE.biometricVaultUserId); localStorage.removeItem(STORAGE.biometricVaultPassword); localStorage.removeItem(STORAGE.biometricVaultName);
     showToast("ورود بیومتریک غیرفعال شد."); profileMenuOpen=false; render();
 }
@@ -4373,6 +4524,9 @@ function stopConditionalPasskeyLogin(){
 }
 
 async function startConditionalPasskeyLogin(){
+    // Prefer Telegram's native BiometricManager inside Mini Apps; do not let
+    // the browser's conditional Passkey UI compete with Telegram's own prompt.
+    if(telegramBiometricAvailableCache) return;
     const usernameInput=document.getElementById("authNameInput");
     if(!usernameInput || !biometricAvailableCache || !biometricPlatformAvailableCache || conditionalPasskeyActive) return;
     if(!PublicKeyCredential.isConditionalMediationAvailable) return;
@@ -4409,6 +4563,14 @@ async function startConditionalPasskeyLogin(){
 
 async function loginWithBiometric(){
     stopConditionalPasskeyLogin();
+    if(telegramBiometricAvailableCache && telegramBiometricTokenSavedCache){
+        const button=document.querySelector('.auth-fingerprint-btn');
+        if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+        try{await loginWithTelegramBiometric();}
+        catch(e){console.error("Telegram biometric login",e);showToast(e.message||"ورود با اثر انگشت تلگرام انجام نشد.");}
+        finally{if(button){button.disabled=false;button.removeAttribute('aria-busy');}}
+        return;
+    }
     if(!biometricAvailableCache){
         showToast("برای ورود با Passkey، صفحه را در Chrome یا مرورگر امن باز کن.");
         return;
@@ -7838,7 +8000,7 @@ function renderProfile(){
         <div class="profile-actions">
 
         ${
-            biometricAvailableCache
+            canShowBiometricSettings()
             ?`
 
             <button
@@ -8138,15 +8300,15 @@ function renderAuthForm(profile){
             </button>
 
             ${
-                biometricAvailableCache
+                canShowBiometricLogin()
                 ?`
 
                 <button
                     type="button"
                     class="auth-fingerprint-btn"
                     onclick="loginWithBiometric()"
-                    aria-label="ورود با Passkey و اثر انگشت"
-                    title="ورود امن با اثر انگشت"
+                    aria-label="ورود با اثر انگشت یا تشخیص چهره"
+                    title="ورود امن با اثر انگشت یا تشخیص چهره"
                 >
 
                     <i data-lucide="fingerprint"></i>
@@ -8799,6 +8961,7 @@ async function logoutAccount(){
         STORAGE.userPassword
     );
     localStorage.removeItem(STORAGE.passkeyAuthenticated);
+    telegramBiometricSessionToken="";
 
     localStorage.removeItem(
         STORAGE.profile
@@ -10459,6 +10622,8 @@ function render(){
 /* =====================================================
 INITIALIZE
 ===================================================== */
+
+try{if(window.Telegram&&window.Telegram.WebApp&&typeof window.Telegram.WebApp.ready==="function")window.Telegram.WebApp.ready();}catch(e){}
 
 loadTheme();
 
