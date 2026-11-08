@@ -5372,10 +5372,39 @@ async function loadCourseAnnouncements(courseId){
     }
 }
 
+function getSeenCourseAnnouncementIds(){
+    try{
+        const raw=localStorage.getItem("medib4_seen_course_announcements")||"[]";
+        return new Set(JSON.parse(raw).map(String));
+    }catch(e){
+        return new Set();
+    }
+}
+
+function markCourseAnnouncementsSeen(list){
+    try{
+        const seen=getSeenCourseAnnouncementIds();
+        (list||[]).forEach(a=>{
+            if(a && a.id!=null) seen.add(String(a.id));
+        });
+        localStorage.setItem("medib4_seen_course_announcements",JSON.stringify([...seen]));
+    }catch(e){}
+}
+
 function renderCourseAnnouncements(courseId){
     const list=courseAnnouncements[courseId]||[];
     if(!list.length)return "";
-    const title=list[0].title||"اطلاعیه";
+
+    // فقط اطلاعیه‌هایی که کاربر قبلاً ندیده نمایش داده شوند.
+    // به این ترتیب بعد از خروج از آزمون و برگشت به صفحه درس،
+    // همان اطلاعیه دوباره به‌صورت خودکار باز نمی‌شود.
+    const seen=getSeenCourseAnnouncementIds();
+    const unseen=list.filter(a=>a && a.id!=null ? !seen.has(String(a.id)) : true);
+    if(!unseen.length)return "";
+
+    markCourseAnnouncementsSeen(unseen);
+
+    const title=unseen[0].title||"اطلاعیه";
     return `
         <div class="notice-modal-backdrop" role="dialog" aria-modal="true" aria-label="اطلاعیه درس">
             <section class="notice-modal" onclick="event.stopPropagation()">
@@ -5384,7 +5413,7 @@ function renderCourseAnnouncements(courseId){
                 <div class="notice-modal-kicker">اطلاعیه درس</div>
                 <h2>${escapeHTML(title)}</h2>
                 <div class="notice-list">
-                    ${list.map((a,i)=>`<article class="notice-item">
+                    ${unseen.map((a,i)=>`<article class="notice-item">
                         ${i?`<div class="notice-item-title">${escapeHTML(a.title||"اطلاعیه")}</div>`:""}
                         <div class="notice-item-text">${escapeHTML(a.text||"")}</div>
                         <div class="notice-item-date">${a.created_at?new Date(a.created_at).toLocaleDateString('fa-IR'):""}</div>
