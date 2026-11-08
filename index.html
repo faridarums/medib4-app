@@ -3816,6 +3816,9 @@ const STORAGE={
     biometricVaultName:
         "medib4_biometric_vault_name",
 
+    passkeyAuthenticated:
+        "medib4_passkey_authenticated",
+
     scoredQuestions:
         "medib4_scored_questions"
 
@@ -4354,11 +4357,15 @@ async function loginWithBiometric(){
         const r=credential.response;
         const verifyRes=await fetch(API_BASE+"/api/webauthn/login/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({credential:{id:credential.id,type:credential.type,response:{clientDataJSON:bufToBase64Url(r.clientDataJSON),authenticatorData:bufToBase64Url(r.authenticatorData),signature:bufToBase64Url(r.signature),userHandle:r.userHandle?bufToBase64Url(r.userHandle):null}}})});
         const data=await verifyRes.json(); if(!verifyRes.ok)throw new Error(data.error||"تأیید Passkey ناموفق بود.");
+        // A verified Passkey is a complete login method; do not require or
+        // fabricate a password just to unlock the account screen.
         localStorage.setItem(STORAGE.userId,data.user_id);
         localStorage.setItem(STORAGE.biometricCredentialId,credential.id);
+        localStorage.setItem(STORAGE.passkeyAuthenticated,"1");
         const profileName=data.name||localStorage.getItem(STORAGE.biometricVaultName)||"";
+        if(!profileName) throw new Error("ورود تأیید شد اما نام حساب از سرور دریافت نشد. یک‌بار با رمز وارد شو و دوباره Passkey را ثبت کن.");
         saveProfile({name:profileName});
-        showToast("خوش اومدی!"); render();
+        showToast("ورود با اثر انگشت موفق بود؛ خوش اومدی!"); render();
     }catch(e){ console.error("passkey login error",e); showToast("ورود بیومتریک ناموفق بود: "+(e&&e.message?e.message:"")); }
 }
 
@@ -7570,8 +7577,11 @@ function renderProfile(){
     const stats=
         getStats();
 
+    // A successful WebAuthn assertion is an authenticated account session
+    // even though no account password is stored on the device.
     const hasPassword=
-        !!getUserPassword();
+        !!getUserPassword() ||
+        localStorage.getItem(STORAGE.passkeyAuthenticated)==="1";
 
     const firstLetter=
         profile.name
@@ -8471,6 +8481,7 @@ async function handleAuthSubmit(){
                 STORAGE.userId,
                 data.user_id
             );
+            localStorage.setItem(STORAGE.passkeyAuthenticated,"1");
 
             setUserPassword(
                 password
@@ -8541,6 +8552,7 @@ async function handleAuthSubmit(){
             STORAGE.userId,
             regData.user_id
         );
+        localStorage.setItem(STORAGE.passkeyAuthenticated,"1");
 
         setUserPassword(password);
 
@@ -8696,6 +8708,7 @@ async function logoutAccount(){
     localStorage.removeItem(
         STORAGE.userPassword
     );
+    localStorage.removeItem(STORAGE.passkeyAuthenticated);
 
     localStorage.removeItem(
         STORAGE.profile
