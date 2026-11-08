@@ -5247,48 +5247,73 @@ function setNav(active){
 
 }
 
+// جلوگیری از اجرای دوباره‌ی بازگشت در اثر هم‌زمانی کلیک داخلی و Back تلگرام
+let backNavigationLocked=false;
+let telegramBackHandlerBound=false;
+
+function syncTelegramBackButton(){
+    try{
+        const tg=window.Telegram&&window.Telegram.WebApp;
+        const back=tg&&tg.BackButton;
+        if(!back)return;
+        if(currentScreen!=="home") back.show();
+        else back.hide();
+    }catch(e){}
+}
+
+function bindTelegramBackButton(){
+    try{
+        const tg=window.Telegram&&window.Telegram.WebApp;
+        const back=tg&&tg.BackButton;
+        if(!back || telegramBackHandlerBound)return;
+        back.onClick(goBack);
+        telegramBackHandlerBound=true;
+        syncTelegramBackButton();
+    }catch(e){}
+}
+
 function navigate(screen,data=null){
 
     if(currentScreen!==screen){
-
-        historyStack.push(
-            currentScreen
-        );
-
+        // فقط یک ورودی از هر صفحه‌ی متوالی نگه می‌داریم؛ رندر مجدد نباید تاریخچه بسازد.
+        if(historyStack[historyStack.length-1]!==currentScreen){
+            historyStack.push(currentScreen);
+        }
     }
 
     currentScreen=screen;
-
     render(data);
+    syncTelegramBackButton();
 
 }
 
 function goBack(){
 
+    // اگر دو منبع بازگشت تقریباً هم‌زمان فعال شدند، فقط یکی اجرا شود.
+    if(backNavigationLocked)return;
+    backNavigationLocked=true;
+    setTimeout(()=>{backNavigationLocked=false;},500);
+
     if(timerInterval){
-
-        clearInterval(
-            timerInterval
-        );
-
+        clearInterval(timerInterval);
         timerInterval=null;
-
     }
 
-    const previous=
-        historyStack.pop();
+    let previous=null;
+    while(historyStack.length && !previous){
+        const candidate=historyStack.pop();
+        if(candidate && candidate!==currentScreen) previous=candidate;
+    }
 
-    if(previous){
-
-        currentScreen=previous;
-
-        render();
-
-    }else{
-
+    // خروج از فهرست درس‌ها همیشه مستقیم به خانه برمی‌گردد.
+    if(currentScreen==="courses" || !previous){
         goHome();
-
+        return;
     }
+
+    currentScreen=previous;
+    render();
+    syncTelegramBackButton();
 
 }
 
@@ -10610,6 +10635,7 @@ function render(){
 
     updateGlobalAnnouncementBell();
     refreshIcons();
+    syncTelegramBackButton();
 
     if(currentScreen==="profile" && document.getElementById("authNameInput")){
         startConditionalPasskeyLogin();
@@ -10624,6 +10650,7 @@ INITIALIZE
 ===================================================== */
 
 try{if(window.Telegram&&window.Telegram.WebApp&&typeof window.Telegram.WebApp.ready==="function")window.Telegram.WebApp.ready();}catch(e){}
+bindTelegramBackButton();
 
 loadTheme();
 
