@@ -118,29 +118,32 @@ button{border:0;cursor:pointer;}
 .q-options-view{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.9;}
 .q-options-view .correct{color:var(--green);font-weight:700;}
 
-/* Refined comments and admin reply composer */
-.comment-card{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:start;gap:12px;padding:18px;margin:0 0 14px;border:1px solid rgba(168,85,247,.22);border-radius:24px!important;background:linear-gradient(150deg,rgba(30,21,48,.98),rgba(15,11,27,.98));box-shadow:0 12px 30px rgba(0,0,0,.16);overflow:hidden;}
-.comment-content{min-width:0;}
-.comment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;}
+/* Comments: soft conversation cards, rounded surfaces and compact composer */
+.comments-list{display:grid;gap:16px;margin-top:14px;}
+.comment-card{display:flex;flex-direction:column;gap:14px;width:100%;min-width:0;margin:0;padding:18px 18px 16px;border:1px solid rgba(168,85,247,.19);border-radius:28px!important;background:linear-gradient(155deg,rgba(31,23,49,.96),rgba(17,13,29,.98));box-shadow:0 10px 28px rgba(0,0,0,.16);overflow:hidden;}
+.comment-content{display:flex;flex-direction:column;gap:12px;min-width:0;width:100%;}
+.comment-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.comment-author-wrap{display:flex;align-items:center;gap:10px;min-width:0;}
+.comment-avatar{width:38px;height:38px;display:grid;place-items:center;flex:none;border-radius:15px;background:linear-gradient(145deg,rgba(168,85,247,.25),rgba(126,34,206,.13));border:1px solid rgba(168,85,247,.22);color:#d8b4fe;font-weight:900;font-size:14px;}
 .comment-author{font-size:13px;font-weight:800;color:var(--text);}
-.comment-meta{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.8;}
-.comment-message{padding:13px 15px;border-radius:17px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);font-size:13px;line-height:2;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text);}
-.comment-replies{display:grid;gap:9px;margin-top:12px;}
-.comment-reply{position:relative;padding:12px 15px;border-radius:17px 17px 6px 17px;background:linear-gradient(135deg,rgba(168,85,247,.13),rgba(126,34,206,.07));border:1px solid rgba(168,85,247,.22);}
-.comment-reply-label{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;color:#c4a2ff;margin-bottom:6px;}
-.comment-reply-text{font-size:12px;line-height:2;color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere;}
-.comment-reply-compose{margin-top:14px;padding:15px;border-radius:21px!important;background:linear-gradient(145deg,rgba(168,85,247,.09),rgba(255,255,255,.025));border:1px solid rgba(168,85,247,.20);}
-.comment-reply-compose label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;color:#d8c4fa;margin-bottom:10px;}
-.comment-reply-textarea{display:block;width:100%;min-height:88px;resize:vertical;border-radius:16px!important;border:1px solid rgba(168,85,247,.20);background:rgba(7,5,15,.72);color:var(--text);padding:12px 14px;font-size:12px;line-height:2;outline:none;transition:border-color .2s,box-shadow .2s;}
+.comment-meta{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.8;}
+.comment-message{padding:14px 16px;border-radius:21px!important;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.055);font-size:13px;line-height:2.05;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text);}
+.comment-replies{display:grid;gap:10px;margin-top:2px;padding-right:12px;border-right:2px solid rgba(168,85,247,.24);}
+.comment-reply{padding:13px 15px;border-radius:21px 21px 21px 8px!important;background:linear-gradient(140deg,rgba(168,85,247,.14),rgba(126,34,206,.055));border:1px solid rgba(168,85,247,.18);}
+.comment-reply-label{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;color:#d0adff;margin-bottom:7px;}
+.comment-reply-text{font-size:12px;line-height:2.05;color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere;}
+.comment-reply-compose{margin-top:2px;padding:15px;border-radius:24px!important;background:rgba(9,7,17,.48);border:1px solid rgba(168,85,247,.16);}
+.comment-reply-compose label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#d8c4fa;margin-bottom:10px;}
+.comment-reply-textarea{display:block;width:100%;min-height:76px;resize:vertical;border-radius:20px!important;border:1px solid rgba(168,85,247,.18);background:rgba(255,255,255,.035);color:var(--text);padding:13px 16px;font-size:12px;line-height:2;outline:none;transition:border-color .2s,box-shadow .2s;}
 .comment-reply-textarea::placeholder{color:#817791;}
-.comment-reply-textarea:focus{border-color:rgba(192,132,252,.75);box-shadow:0 0 0 4px rgba(168,85,247,.10);}
-.comment-reply-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px;}
-.comment-reply-hint{font-size:10px;line-height:1.8;color:var(--muted);}
-.comment-send-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:126px;padding:10px 17px;border-radius:14px!important;background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff;font-size:12px;font-weight:800;box-shadow:0 6px 16px rgba(126,34,206,.22);transition:transform .18s,filter .18s;}
+.comment-reply-textarea:focus{border-color:rgba(192,132,252,.72);box-shadow:0 0 0 4px rgba(168,85,247,.09);}
+.comment-reply-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;}
+.comment-reply-hint{font-size:10px;line-height:1.9;color:var(--muted);}
+.comment-send-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:132px;padding:11px 18px;border-radius:999px!important;background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff;font-size:12px;font-weight:800;box-shadow:0 7px 18px rgba(126,34,206,.20);transition:transform .18s,filter .18s;}
 .comment-send-btn:active{transform:scale(.97);}
 .comment-send-btn:disabled{opacity:.55;cursor:wait;box-shadow:none;}
-.comment-delete{margin-top:0;border-radius:12px!important;}
-@media(max-width:520px){.comment-card{grid-template-columns:minmax(0,1fr) 34px;gap:8px;padding:13px;border-radius:21px!important}.comment-reply-compose{padding:12px;border-radius:18px!important}.comment-reply-footer{align-items:stretch;flex-direction:column}.comment-send-btn{width:100%;min-height:44px}.comment-reply-hint{order:2}}
+.comment-delete{width:36px;height:36px;border-radius:50%!important;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.16);}
+@media(max-width:520px){.comment-card{padding:15px;border-radius:25px!important;gap:12px}.comment-reply-compose{padding:12px;border-radius:21px!important}.comment-reply-footer{align-items:stretch;flex-direction:column}.comment-send-btn{width:100%;min-height:45px}.comment-reply-hint{order:2}.comment-message{padding:12px 14px;border-radius:18px!important}}
 </style>
 </head>
 <body>
@@ -796,16 +799,24 @@ COMMENTS TAB
 async function renderCommentsTab(el) {
   const comments = await api("/api/admin/comments");
   el.innerHTML = `
-    <div class="card">
-      <h3>آخرین نظرات (${comments.length})</h3>
+    <section class="comments-section">
+      <div class="card comments-heading-card">
+        <h3>آخرین نظرات (${comments.length})</h3>
+        <div class="muted-small">پاسخ‌ها مستقیماً زیر نظر کاربران نمایش داده می‌شوند.</div>
+      </div>
+      <div class="comments-list">
       ${comments.length ? comments.map(c => `
         <article class="comment-card">
           <div class="comment-content">
-            <div class="comment-head">
-              <div>
-                <div class="comment-author">${escapeHTML(c.name || "کاربر")}</div>
-                <div class="comment-meta">سوال: ${escapeHTML(c.question_id)} · ${new Date(c.created_at).toLocaleString('fa-IR')}</div>
+            <div class="comment-topline">
+              <div class="comment-author-wrap">
+                <div class="comment-avatar">${escapeHTML((c.name || "ک").trim().charAt(0))}</div>
+                <div>
+                  <div class="comment-author">${escapeHTML(c.name || "کاربر")}</div>
+                  <div class="comment-meta">سوال ${escapeHTML(c.question_id)} · ${new Date(c.created_at).toLocaleString('fa-IR')}</div>
+                </div>
               </div>
+              <button class="icon-btn danger comment-delete" onclick="deleteComment(${c.id})" title="حذف نظر" aria-label="حذف نظر"><i data-lucide="trash-2"></i></button>
             </div>
             <div class="comment-message">${escapeHTML(c.text)}</div>
             ${(c.replies || []).length ? `
@@ -819,20 +830,18 @@ async function renderCommentsTab(el) {
               </div>
             ` : ""}
             <div class="comment-reply-compose">
-              <label for="commentReply-${c.id}"><i data-lucide="message-circle" style="width:14px;height:14px;"></i> پاسخ شما به این نظر</label>
-              <textarea class="comment-reply-textarea" id="commentReply-${c.id}" rows="3" placeholder="پاسخ خود را بنویسید..."></textarea>
+              <label for="commentReply-${c.id}"><i data-lucide="message-circle" style="width:14px;height:14px;"></i> نوشتن پاسخ</label>
+              <textarea class="comment-reply-textarea" id="commentReply-${c.id}" rows="2" placeholder="پاسخ محترمانه و کوتاه خود را بنویسید..."></textarea>
               <div class="comment-reply-footer">
-                <span class="comment-reply-hint">پاسخ پس از ثبت، زیر همین نظر برای کاربران نمایش داده می‌شود.</span>
-                <button class="comment-send-btn" onclick="sendCommentReply(${c.id})"><i data-lucide="send" style="width:14px;height:14px;"></i> ارسال پاسخ</button>
+                <span class="comment-reply-hint">پاسخ برای همه کاربران قابل مشاهده خواهد بود.</span>
+                <button class="comment-send-btn" onclick="sendCommentReply(${c.id})"><i data-lucide="send" style="width:14px;height:14px;"></i> ثبت پاسخ</button>
               </div>
             </div>
           </div>
-          <div class="item-actions">
-            <button class="icon-btn danger comment-delete" onclick="deleteComment(${c.id})" title="حذف نظر"><i data-lucide="trash-2"></i></button>
-          </div>
         </article>
-      `).join("") : `<div class="empty">هنوز نظری ثبت نشده.</div>`}
-    </div>
+      `).join("") : `<div class="card empty">هنوز نظری ثبت نشده.</div>`}
+      </div>
+    </section>
   `;
 }
 

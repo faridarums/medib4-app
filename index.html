@@ -2469,24 +2469,25 @@ body.light .auth-field input::placeholder{
 }
 
 .auth-fingerprint-btn{
-    width:52px;
+    min-width:52px;
     height:52px;
     flex-shrink:0;
     margin-top:2px;
-    border-radius:16px;
+    padding:0 13px;
+    border-radius:17px;
     border:1px solid rgba(168,85,247,.35);
-    background:rgba(168,85,247,.10);
+    background:linear-gradient(145deg,rgba(168,85,247,.16),rgba(126,34,206,.08));
     color:var(--purple);
     display:flex;
     align-items:center;
     justify-content:center;
-    transition:transform .15s;
+    gap:8px;
+    transition:transform .15s,opacity .15s;
 }
 
-.auth-fingerprint-btn svg{
-    width:20px;
-    height:20px;
-}
+.auth-fingerprint-btn svg{width:20px;height:20px;flex:none;}
+.auth-fingerprint-label{font-size:11px;font-weight:800;white-space:nowrap;}
+.auth-fingerprint-btn:disabled{opacity:.55;cursor:wait;}
 
 .auth-fingerprint-btn:active{
     transform:scale(.94);
@@ -4335,38 +4336,125 @@ function disableBiometricLogin(){
     showToast("ورود بیومتریک غیرفعال شد."); profileMenuOpen=false; render();
 }
 
-async function loginWithBiometric(){
-    if(!biometricAvailableCache){ showToast("برای ورود با Passkey، صفحه را در مرورگر امن مثل Chrome باز کن."); return; }
-    if(window.Telegram&&window.Telegram.WebApp&&typeof window.Telegram.WebApp.openLink==='function'){
-        if(openPasskeyInExternalBrowser()) return;
+let conditionalPasskeyController=null;
+let conditionalPasskeyActive=false;
+
+async function completePasskeyLogin(credential){
+    const r=credential.response;
+    const verifyRes=await fetch(API_BASE+"/api/webauthn/login/verify",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({credential:{id:credential.id,type:credential.type,response:{
+            clientDataJSON:bufToBase64Url(r.clientDataJSON),
+            authenticatorData:bufToBase64Url(r.authenticatorData),
+            signature:bufToBase64Url(r.signature),
+            userHandle:r.userHandle?bufToBase64Url(r.userHandle):null
+        }}})
+    });
+    const data=await verifyRes.json();
+    if(!verifyRes.ok) throw new Error(data.error||"تأیید Passkey ناموفق بود.");
+    if(!data.user_id) throw new Error("سرور حساب مربوط به این Passkey را برنگرداند.");
+    const profileName=String(data.name||localStorage.getItem(STORAGE.biometricVaultName)||"").trim();
+    if(!profileName) throw new Error("ورود تأیید شد اما نام حساب از سرور دریافت نشد.");
+
+    localStorage.setItem(STORAGE.userId,data.user_id);
+    localStorage.setItem(STORAGE.biometricCredentialId,credential.id);
+    localStorage.setItem(STORAGE.passkeyAuthenticated,"1");
+    saveProfile({name:profileName});
+    showToast("ورود با اثر انگشت موفق بود؛ خوش اومدی!");
+    render();
+}
+
+function stopConditionalPasskeyLogin(){
+    if(conditionalPasskeyController){
+        try{conditionalPasskeyController.abort();}catch{}
     }
+    conditionalPasskeyController=null;
+    conditionalPasskeyActive=false;
+}
+
+async function startConditionalPasskeyLogin(){
+    const usernameInput=document.getElementById("authNameInput");
+    if(!usernameInput || !biometricAvailableCache || !biometricPlatformAvailableCache || conditionalPasskeyActive) return;
+    if(!PublicKeyCredential.isConditionalMediationAvailable) return;
+
+    conditionalPasskeyActive=true;
+    const controller=new AbortController();
+    conditionalPasskeyController=controller;
     try{
-        const optRes=await fetch(API_BASE+"/api/webauthn/login/options",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin:location.origin})});
-        const opts=await optRes.json(); if(!optRes.ok)throw new Error(opts.error||"دریافت درخواست ورود ناموفق بود.");
+        let supported=false;
+        try{supported=await PublicKeyCredential.isConditionalMediationAvailable();}catch{}
+        if(!supported || !document.getElementById("authNameInput")) return;
+
+        const optRes=await fetch(API_BASE+"/api/webauthn/login/options",{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({origin:location.origin})
+        });
+        const opts=await optRes.json();
+        if(!optRes.ok) throw new Error(opts.error||"دریافت درخواست Passkey ناموفق بود.");
+        const credential=await navigator.credentials.get({
+            publicKey:{challenge:base64UrlToBuf(opts.challenge),rpId:opts.rpId,userVerification:"required",timeout:120000},
+            mediation:"conditional",
+            signal:controller.signal
+        });
+        if(credential) await completePasskeyLogin(credential);
+    }catch(e){
+        if(e&&e.name!=="AbortError") console.warn("Conditional Passkey unavailable",e);
+    }finally{
+        if(conditionalPasskeyController===controller){
+            conditionalPasskeyController=null;
+            conditionalPasskeyActive=false;
+        }
+    }
+}
+
+async function loginWithBiometric(){
+    stopConditionalPasskeyLogin();
+    if(!biometricAvailableCache){
+        showToast("برای ورود با Passkey، صفحه را در Chrome یا مرورگر امن باز کن.");
+        return;
+    }
+
+    // Use WebAuthn in the current context whenever the platform authenticator
+    // is available. Telegram's openLink must only be a fallback: opening the
+    // page first caused Google Password Manager to autofill the username only,
+    // without completing a WebAuthn assertion.
+    if(!biometricPlatformAvailableCache){
+        if(openPasskeyInExternalBrowser()) return;
+        showToast("ورود با اثر انگشت در این محیط پشتیبانی نمی‌شود؛ صفحه را در Chrome باز کن.");
+        return;
+    }
+
+    const button=document.querySelector('.auth-fingerprint-btn');
+    if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+    try{
+        const optRes=await fetch(API_BASE+"/api/webauthn/login/options",{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({origin:location.origin})
+        });
+        const opts=await optRes.json();
+        if(!optRes.ok) throw new Error(opts.error||"دریافت درخواست ورود ناموفق بود.");
+
         const publicKeyOptions={
             challenge:base64UrlToBuf(opts.challenge),
             rpId:opts.rpId,
             userVerification:"required",
             timeout:60000
         };
-        // Intentionally omit allowCredentials: use a discoverable Passkey so
-        // Google Password Manager can find it even after local app data is cleared
-        // or the user opens the Mini App in a different browser context.
-        const credential=await navigator.credentials.get({publicKey:publicKeyOptions});
-        if(!credential)throw new Error("ورود لغو شد.");
-        const r=credential.response;
-        const verifyRes=await fetch(API_BASE+"/api/webauthn/login/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({credential:{id:credential.id,type:credential.type,response:{clientDataJSON:bufToBase64Url(r.clientDataJSON),authenticatorData:bufToBase64Url(r.authenticatorData),signature:bufToBase64Url(r.signature),userHandle:r.userHandle?bufToBase64Url(r.userHandle):null}}})});
-        const data=await verifyRes.json(); if(!verifyRes.ok)throw new Error(data.error||"تأیید Passkey ناموفق بود.");
-        // A verified Passkey is a complete login method; do not require or
-        // fabricate a password just to unlock the account screen.
-        localStorage.setItem(STORAGE.userId,data.user_id);
-        localStorage.setItem(STORAGE.biometricCredentialId,credential.id);
-        localStorage.setItem(STORAGE.passkeyAuthenticated,"1");
-        const profileName=data.name||localStorage.getItem(STORAGE.biometricVaultName)||"";
-        if(!profileName) throw new Error("ورود تأیید شد اما نام حساب از سرور دریافت نشد. یک‌بار با رمز وارد شو و دوباره Passkey را ثبت کن.");
-        saveProfile({name:profileName});
-        showToast("ورود با اثر انگشت موفق بود؛ خوش اومدی!"); render();
-    }catch(e){ console.error("passkey login error",e); showToast("ورود بیومتریک ناموفق بود: "+(e&&e.message?e.message:"")); }
+        // Discoverable credential: Google Password Manager returns the signed
+        // assertion here; a passkey never fills or needs the account password.
+        const credential=await navigator.credentials.get({publicKey:publicKeyOptions,mediation:"required"});
+        if(!credential) throw new Error("تأیید اثر انگشت لغو شد.");
+
+        // Only establish the local session after the server has verified the
+        // WebAuthn signature and returned the matching account.
+        await completePasskeyLogin(credential);
+    }catch(e){
+        console.error("passkey login error",e);
+        const msg=e&&e.name==="NotAllowedError"?"درخواست اثر انگشت لغو شد یا زمان آن تمام شد.":(e&&e.message?e.message:"خطای نامشخص");
+        showToast("ورود با اثر انگشت انجام نشد: "+msg);
+    }finally{
+        if(button){button.disabled=false;button.removeAttribute('aria-busy');}
+    }
 }
 
 function bufToBase64Url(buf){
@@ -7949,7 +8037,7 @@ function renderAuthForm(profile){
         </strong>
 
         <span>
-            با یه نام و رمز عبور، امتیاز و پیشرفتت همیشه محفوظ می‌مونه
+            با نام و رمز وارد شو؛ یا از پیشنهاد Passkey گوگل استفاده کن تا بعد از اثر انگشت، مستقیم وارد حساب بشی.
         </span>
 
     </div>
@@ -7963,7 +8051,7 @@ function renderAuthForm(profile){
                 type="text"
                 placeholder="نام شما"
                 value="${escapeHTML(profile.name||"")}"
-                autocomplete="off"
+                autocomplete="username webauthn"
             >
 
             <i data-lucide="user-round"></i>
@@ -7980,7 +8068,7 @@ function renderAuthForm(profile){
                     :"password"
                 }"
                 placeholder="رمز عبور (حداقل ۶ کاراکتر)"
-                autocomplete="off"
+                autocomplete="current-password"
                 onkeydown="if(event.key==='Enter')handleAuthSubmit()"
             >
 
@@ -8057,10 +8145,12 @@ function renderAuthForm(profile){
                     type="button"
                     class="auth-fingerprint-btn"
                     onclick="loginWithBiometric()"
-                    aria-label="ورود با اثرانگشت"
+                    aria-label="ورود با Passkey و اثر انگشت"
+                    title="ورود امن با اثر انگشت"
                 >
 
                     <i data-lucide="fingerprint"></i>
+                    <span class="auth-fingerprint-label">ورود با اثر انگشت</span>
 
                 </button>
 
@@ -10357,6 +10447,12 @@ function render(){
 
     updateGlobalAnnouncementBell();
     refreshIcons();
+
+    if(currentScreen==="profile" && document.getElementById("authNameInput")){
+        startConditionalPasskeyLogin();
+    }else{
+        stopConditionalPasskeyLogin();
+    }
 
 }
 
