@@ -136,7 +136,8 @@ body{
         24px 24px,
         100% 100%;
 
-    background-attachment:fixed;
+    /* Fixed multi-layer backgrounds can flicker in Android Telegram WebView. */
+    background-attachment:scroll;
 
     transition:
         background-color .3s,
@@ -5788,9 +5789,14 @@ function openCourse(courseId){
 
     currentCourse=courseId;
 
+    // Load notices without rebuilding the entire course screen after navigation.
     loadCourseAnnouncements(courseId).then(()=>{
-        if(currentCourse===courseId && (currentScreen==="course" || currentScreen==="genderSelect")){
-            render();
+        if(currentCourse===courseId && currentScreen==="course"){
+            const mount=document.getElementById("courseNoticeMount");
+            if(mount){
+                mount.innerHTML=renderCourseNoticePanel(courseId);
+                refreshIcons();
+            }
         }
     });
 
@@ -5996,7 +6002,7 @@ function renderCourse(){
 
         </div>
 
-        ${renderCourseNoticePanel(currentCourse)}
+        <div id="courseNoticeMount">${renderCourseNoticePanel(currentCourse)}</div>
 
         ${renderCourseAnnouncementsModal(currentCourse)}
 
