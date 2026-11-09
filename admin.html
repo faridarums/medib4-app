@@ -106,7 +106,7 @@ button{border:0;cursor:pointer;}
 
 .item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px;border-radius:14px;background:var(--bg-secondary);border:1px solid var(--border);margin-bottom:8px;}
 .item-main{flex:1;min-width:0;}
-.item-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.item-title{font-size:13px;font-weight:600;margin-bottom:3px;white-space:pre-wrap;overflow-wrap:anywhere;}
 .item-sub{font-size:11px;color:var(--muted);}
 .item-actions{display:flex;gap:6px;flex-shrink:0;}
 .icon-btn{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--card-hover);border:1px solid var(--border);color:var(--muted);}
@@ -115,7 +115,7 @@ button{border:0;cursor:pointer;}
 
 .empty{text-align:center;color:var(--muted);font-size:12px;padding:24px 0;}
 .muted-small{color:var(--muted);font-size:11px;}
-.q-options-view{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.9;}
+.q-options-view{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;}
 .q-options-view .correct{color:var(--green);font-weight:700;}
 
 /* Comments: soft conversation cards, rounded surfaces and compact composer */
@@ -498,7 +498,7 @@ async function renderQuestionsTab(el) {
 
       ${bulkMode === 'text' ? `
         <p class="muted-small" style="margin-bottom:10px;line-height:2;">
-          هر سوال رو با یه خط خالی از سوال بعدی جدا کن. زیر سوال، گزینه‌ها رو یکی‌یکی بنویس (هر گزینه یه خط)، و جلوی گزینه‌ی درست یه ستاره <b>*</b> بذار. اگه خواستی، یه خط با «توضیح:» هم آخرش اضافه کن.
+          می‌تونی سؤال‌ها رو بدون خط خالی بینشان هم پیست کنی: هر سؤال در یک خط و بعدش دقیقاً ۴ گزینه (هر گزینه یک خط). جلوی گزینه درست <b>*</b> بذار. «توضیح:» هم اختیاریه و بعد از گزینه چهارم میاد. خط خالی بین سؤال‌ها و شماره‌گذاری سؤال‌ها هم پشتیبانی می‌شه.
         </p>
         <div class="row">
           <textarea id="bulkQText" style="min-height:220px;font-size:12px;line-height:2;" placeholder="پایتخت ایران کجاست؟
@@ -588,20 +588,21 @@ function setBulkMode(mode) {
 }
 
 function parseBulkPlainText(raw) {
-  // جداکننده اصلی خط خالی است؛ اما اگر شماره‌گذاری سؤال‌ها وجود داشته باشد
-  // حتی در صورت حذف فاصله‌های خالی توسط Paste هم می‌توانیم سؤال‌ها را جدا کنیم.
+  // جداکننده‌های پشتیبانی‌شده:
+  // ۱) خط خالی بین سؤال‌ها؛ ۲) شماره‌گذاری سؤال‌ها؛ ۳) بدون جداکننده: هر سؤال + چهار گزینه.
   const normalized = String(raw || "").replace(/\r\n?/g, "\n").trim();
   if (!normalized) return { questions: [], errors: [] };
 
   const lines = normalized.split("\n");
   const startsQuestion = line =>
     /^\s*(?:\d+\s*[\.\)]|سوال\s*\d*\s*[:\.)-])\s*/i.test(line);
-
-  const blocks = [];
-  let current = [];
   const hasExplicitQuestionMarkers = lines.some(startsQuestion);
+  const hasBlankSeparators = lines.some(line => !line.trim());
+  const implicitGroups = !hasExplicitQuestionMarkers && !hasBlankSeparators;
 
+  let blocks = [];
   if (hasExplicitQuestionMarkers) {
+    let current = [];
     for (const line of lines) {
       if (startsQuestion(line) && current.some(x => x.trim())) {
         blocks.push(current);
@@ -610,19 +611,37 @@ function parseBulkPlainText(raw) {
       current.push(line);
     }
     if (current.some(x => x.trim())) blocks.push(current);
-  } else {
-    let block = [];
+  } else if (hasBlankSeparators) {
+    let current = [];
     for (const line of lines) {
       if (!line.trim()) {
-        if (block.some(x => x.trim())) {
-          blocks.push(block);
-          block = [];
+        if (current.some(x => x.trim())) {
+          blocks.push(current);
+          current = [];
         }
       } else {
-        block.push(line);
+        current.push(line);
       }
     }
-    if (block.some(x => x.trim())) blocks.push(block);
+    if (current.some(x => x.trim())) blocks.push(current);
+  } else {
+    // متن ساده‌ای که از منبع کپی شده و بین سؤال‌ها خط خالی ندارد:
+    // هر سؤال یک خط و پس از آن چهار گزینه؛ توضیح: در صورت وجود، خط بعد از گزینه‌هاست.
+    const cleanLines = lines.filter(line => line.trim());
+    let i = 0;
+    while (i < cleanLines.length) {
+      const block = [cleanLines[i++]];
+      let optionCount = 0;
+      while (i < cleanLines.length && optionCount < 4) {
+        if (/^\s*توضیح\s*[:：]/.test(cleanLines[i])) break;
+        block.push(cleanLines[i++]);
+        optionCount++;
+      }
+      if (i < cleanLines.length && /^\s*توضیح\s*[:：]/.test(cleanLines[i])) {
+        block.push(cleanLines[i++]);
+      }
+      blocks.push(block);
+    }
   }
 
   const questions = [];
@@ -634,34 +653,39 @@ function parseBulkPlainText(raw) {
     while (cleaned.length && !cleaned[cleaned.length - 1].trim()) cleaned.pop();
     if (!cleaned.length) return;
 
-    let first = cleaned[0].trim();
+    const first = cleaned[0].trim();
     const question = first.replace(/^\s*(\d+\s*[\.\)]|سوال\s*\d*\s*[:\.)-])\s*/i, "").trim();
     const optionLines = [];
     const questionLines = [question];
     let explanation = null;
     let seenOption = false;
 
-    for (let i = 1; i < cleaned.length; i++) {
-      const line = cleaned[i].trim();
-      if (!line) continue;
-      const explMatch = line.match(/^توضیح\s*[:：]\s*(.+)$/);
-      if (explMatch) {
-        explanation = explMatch[1].trim();
-        continue;
-      }
-      // گزینه‌ها با ستاره یا حروف/شماره گزینه یا خطوط کوتاهِ بعد از اولین گزینه تشخیص داده می‌شوند.
-      const looksLikeOption = /^\*\s*/.test(line) || /^(?:الف|ب|ج|د|[A-Da-d]|[۱۲۳۴1-4])\s*[\)\.\-:]/.test(line);
-      if (seenOption || looksLikeOption) {
-        seenOption = true;
-        optionLines.push(line);
-      } else {
-        // اگر متن سؤال چند خطی باشد، فاصله/خطوط آن حفظ می‌شود.
-        questionLines.push(line);
+    if (implicitGroups) {
+      optionLines.push(...cleaned.slice(1, 5));
+      const explLine = cleaned.slice(5).find(line => /^\s*توضیح\s*[:：]/.test(line));
+      if (explLine) explanation = explLine.trim().replace(/^توضیح\s*[:：]\s*/, "").trim();
+    } else {
+      for (let i = 1; i < cleaned.length; i++) {
+        const line = cleaned[i];
+        const content = line.trim();
+        if (!content) continue;
+        const explMatch = content.match(/^توضیح\s*[:：]\s*(.*)$/);
+        if (explMatch) {
+          explanation = explMatch[1].trim();
+          continue;
+        }
+        const looksLikeOption = /^\*\s*/.test(content) || /^(?:الف|ب|ج|د|[A-Da-d]|[۱۲۳۴1-4])\s*[\)\.\-:]?\s+/.test(content);
+        if (seenOption || looksLikeOption) {
+          seenOption = true;
+          optionLines.push(line);
+        } else {
+          questionLines.push(line);
+        }
       }
     }
 
-    if (!question || optionLines.length < 2) {
-      errors.push("سوال شماره " + (blockIndex + 1) + ": متن سوال یا گزینه‌های کافی پیدا نشد.");
+    if (!question || optionLines.length !== 4) {
+      errors.push("سوال شماره " + (blockIndex + 1) + ": باید متن سوال و دقیقاً ۴ گزینه پیدا شود.");
       return;
     }
 
