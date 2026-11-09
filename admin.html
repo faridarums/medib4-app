@@ -588,34 +588,21 @@ function setBulkMode(mode) {
 }
 
 function parseBulkPlainText(raw) {
-  // جداکننده‌های پشتیبانی‌شده:
-  // ۱) خط خالی بین سؤال‌ها؛ ۲) شماره‌گذاری سؤال‌ها؛ ۳) بدون جداکننده: هر سؤال + چهار گزینه.
+  // قالب متن ساده: هر بلوک شامل یک خط سؤال و دقیقاً چهار خط گزینه است.
+  // بلوک‌ها با یک یا چند خط خالی از هم جدا می‌شوند. علامت * می‌تواند
+  // قبل از هرکدام از چهار گزینه باشد و گزینه درست را مشخص می‌کند.
   const normalized = String(raw || "").replace(/\r\n?/g, "\n").trim();
   if (!normalized) return { questions: [], errors: [] };
 
   const lines = normalized.split("\n");
-  const startsQuestion = line =>
-    /^\s*(?:\d+\s*[\.\)]|سوال\s*\d*\s*[:\.)-])\s*/i.test(line);
-  const hasExplicitQuestionMarkers = lines.some(startsQuestion);
   const hasBlankSeparators = lines.some(line => !line.trim());
-  const implicitGroups = !hasExplicitQuestionMarkers && !hasBlankSeparators;
-
   let blocks = [];
-  if (hasExplicitQuestionMarkers) {
-    let current = [];
-    for (const line of lines) {
-      if (startsQuestion(line) && current.some(x => x.trim())) {
-        blocks.push(current);
-        current = [];
-      }
-      current.push(line);
-    }
-    if (current.some(x => x.trim())) blocks.push(current);
-  } else if (hasBlankSeparators) {
+
+  if (hasBlankSeparators) {
     let current = [];
     for (const line of lines) {
       if (!line.trim()) {
-        if (current.some(x => x.trim())) {
+        if (current.length) {
           blocks.push(current);
           current = [];
         }
@@ -623,92 +610,64 @@ function parseBulkPlainText(raw) {
         current.push(line);
       }
     }
-    if (current.some(x => x.trim())) blocks.push(current);
+    if (current.length) blocks.push(current);
   } else {
-    // متن ساده‌ای که از منبع کپی شده و بین سؤال‌ها خط خالی ندارد:
-    // هر سؤال یک خط و پس از آن چهار گزینه؛ توضیح: در صورت وجود، خط بعد از گزینه‌هاست.
+    // سازگاری با متن‌هایی که بین بلوک‌ها خط خالی ندارند:
+    // یک سؤال و چهار گزینه در هر پنج خط.
     const cleanLines = lines.filter(line => line.trim());
-    let i = 0;
-    while (i < cleanLines.length) {
-      const block = [cleanLines[i++]];
-      let optionCount = 0;
-      while (i < cleanLines.length && optionCount < 4) {
-        if (/^\s*توضیح\s*[:：]/.test(cleanLines[i])) break;
-        block.push(cleanLines[i++]);
-        optionCount++;
-      }
-      if (i < cleanLines.length && /^\s*توضیح\s*[:：]/.test(cleanLines[i])) {
-        block.push(cleanLines[i++]);
-      }
-      blocks.push(block);
+    for (let i = 0; i < cleanLines.length; i += 5) {
+      blocks.push(cleanLines.slice(i, i + 5));
     }
   }
 
   const questions = [];
   const errors = [];
 
-  blocks.forEach((rawBlock, blockIndex) => {
-    const cleaned = rawBlock.map(line => line.trimEnd());
-    while (cleaned.length && !cleaned[0].trim()) cleaned.shift();
-    while (cleaned.length && !cleaned[cleaned.length - 1].trim()) cleaned.pop();
-    if (!cleaned.length) return;
+  blocks.forEach((block, blockIndex) => {
+    const content = block.map(line => line.trim()).filter(Boolean);
+    if (!content.length) return;
 
-    const first = cleaned[0].trim();
-    const question = first.replace(/^\s*(\d+\s*[\.\)]|سوال\s*\d*\s*[:\.)-])\s*/i, "").trim();
-    const optionLines = [];
-    const questionLines = [question];
+    const first = content[0].replace(/^\s*(?:(?:سؤال|سوال)\s*)?\d+\s*[.\)\-:]\s*/i, "").trim();
+    const optionLines = content.slice(1, 5);
+    const extraLines = content.slice(5);
     let explanation = null;
-    let seenOption = false;
 
-    if (implicitGroups) {
-      optionLines.push(...cleaned.slice(1, 5));
-      const explLine = cleaned.slice(5).find(line => /^\s*توضیح\s*[:：]/.test(line));
-      if (explLine) explanation = explLine.trim().replace(/^توضیح\s*[:：]\s*/, "").trim();
-    } else {
-      for (let i = 1; i < cleaned.length; i++) {
-        const line = cleaned[i];
-        const content = line.trim();
-        if (!content) continue;
-        const explMatch = content.match(/^توضیح\s*[:：]\s*(.*)$/);
-        if (explMatch) {
-          explanation = explMatch[1].trim();
-          continue;
-        }
-        const looksLikeOption = /^\*\s*/.test(content) || /^(?:الف|ب|ج|د|[A-Da-d]|[۱۲۳۴1-4])\s*[\)\.\-:]?\s+/.test(content);
-        if (seenOption || looksLikeOption) {
-          seenOption = true;
-          optionLines.push(line);
-        } else {
-          questionLines.push(line);
-        }
-      }
+    const explanationIndex = extraLines.findIndex(line => /^توضیح\s*[:：]/.test(line));
+    if (explanationIndex >= 0) {
+      explanation = extraLines.slice(explanationIndex)
+        .join("\n")
+        .replace(/^توضیح\s*[:：]\s*/, "")
+        .trim();
     }
 
-    if (!question || optionLines.length !== 4) {
-      errors.push("سوال شماره " + (blockIndex + 1) + ": باید متن سوال و دقیقاً ۴ گزینه پیدا شود.");
+    if (!first || optionLines.length !== 4) {
+      errors.push("سوال شماره " + (blockIndex + 1) + ": باید یک خط متن سوال و دقیقاً ۴ خط گزینه داشته باشد.");
       return;
     }
 
-    const finalQuestion = questionLines.join("\n").trim();
     let answer = 0;
     let marked = false;
     const options = optionLines.map((line, i) => {
-      let opt = line.trim();
-      const isCorrect = /^\*\s*/.test(opt);
+      let option = line.trim();
+      const isCorrect = /^\*\s*/.test(option);
       if (isCorrect) {
+        if (!marked) answer = i;
         marked = true;
-        answer = i;
-        opt = opt.replace(/^\*\s*/, "");
+        option = option.replace(/^\*\s*/, "");
       }
-      opt = opt.replace(/^(الف|ب|ج|د|[A-Da-d]|[۱۲۳۴]|[1-4])\s*[\)\.\-:]\s*/i, "").trim();
-      return opt;
+      option = option.replace(/^(?:الف|ب|ج|د|[A-Da-d]|[۱۲۳۴]|[1-4])\s*[)\.\-:]\s*/i, "").trim();
+      return option;
     });
 
     if (!marked) {
       errors.push("سوال شماره " + (blockIndex + 1) + ": هیچ گزینه‌ای با * علامت‌گذاری نشده (گزینه اول به‌عنوان پیش‌فرض درست در نظر گرفته شد).");
     }
+    if (optionLines.some(line => !line.trim())) {
+      errors.push("سوال شماره " + (blockIndex + 1) + ": یکی از گزینه‌ها خالی است.");
+      return;
+    }
 
-    questions.push({ question: finalQuestion, options, answer, explanation });
+    questions.push({ question: first, options, answer, explanation });
   });
 
   return { questions, errors };
