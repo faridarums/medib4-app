@@ -174,6 +174,8 @@ let adminPassword = sessionStorage.getItem("medib4_admin_pw") || "";
 let adminRole = sessionStorage.getItem("medib4_admin_role") || "";
 let currentTab = "courses";
 let coursesCache = [];
+let termsCache = [];
+let selectedTermFilter = "term_2";
 let questionsCache = [];
 let selectedCourseFilter = "";
 let bulkMode = "text";
@@ -319,7 +321,8 @@ function logout() {
 DATA LOADING
 ===================================================== */
 async function loadAll() {
-  coursesCache = await api("/api/admin/courses");
+  [termsCache, coursesCache] = await Promise.all([api("/api/admin/terms"), api("/api/admin/courses")]);
+  if (!termsCache.some(t => t.id === selectedTermFilter)) selectedTermFilter = termsCache[0]?.id || "";
 }
 
 /* =====================================================
@@ -327,6 +330,7 @@ APP SHELL
 ===================================================== */
 function renderApp() {
   const tabs = [
+    { id: "terms", label: "ترم‌ها" },
     { id: "courses", label: "دوره‌ها" },
     { id: "questions", label: "بانک سوالات" },
     { id: "comments", label: "نظرات" },
@@ -364,7 +368,8 @@ async function renderTabContent() {
   const el = document.getElementById("tabContent");
   el.innerHTML = `<div class="empty">در حال بارگذاری...</div>`;
   try {
-    if (currentTab === "courses") await renderCoursesTab(el);
+    if (currentTab === "terms") await renderTermsTab(el);
+    else if (currentTab === "courses") await renderCoursesTab(el);
     else if (currentTab === "questions") await renderQuestionsTab(el);
     else if (currentTab === "comments") await renderCommentsTab(el);
     else if (currentTab === "stats") await renderStatsTab(el);
@@ -381,58 +386,166 @@ async function renderTabContent() {
 }
 
 /* =====================================================
-COURSES TAB
+TERMS + COURSES TABS
 ===================================================== */
-async function renderCoursesTab(el) {
-  coursesCache = await api("/api/admin/courses");
+async function renderTermsTab(el) {
+  termsCache = await api("/api/admin/terms");
   el.innerHTML = `
     <div class="card">
-      <h3>افزودن دوره جدید</h3>
+      <h3>افزودن ترم جدید</h3>
       <div class="row">
-        <input id="newCourseTitle" placeholder="عنوان دوره">
-        <input id="newCourseIcon" placeholder="آیکون lucide (اختیاری، مثلاً book-open)">
+        <input id="newTermTitle" placeholder="مثلاً ترم ۳">
       </div>
-      <button class="btn btn-add" onclick="addCourse()">افزودن دوره</button>
+      <button class="btn btn-add" onclick="addTerm()">افزودن ترم</button>
     </div>
     <div class="card">
-      <h3>لیست دوره‌ها (${coursesCache.length})</h3>
-      ${coursesCache.length ? coursesCache.map(c => `
+      <h3>ترم‌ها (${termsCache.length})</h3>
+      ${termsCache.length ? termsCache.map(t => `
+        <div class="item">
+          <div class="item-main">
+            <div class="item-title">${escapeHTML(t.title)}</div>
+            <div class="item-sub">شناسه: ${escapeHTML(t.id)}</div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn" onclick="editTermPrompt('${escapeHTML(t.id)}')"><i data-lucide="pencil"></i></button>
+            ${t.id !== "term_2" ? `<button class="icon-btn danger" onclick="deleteTerm('${escapeHTML(t.id)}')"><i data-lucide="trash-2"></i></button>` : ""}
+          </div>
+        </div>
+      `).join("") : `<div class="empty">هنوز ترمی ثبت نشده.</div>`}
+    </div>
+  `;
+}
+
+async function addTerm() {
+  const title = document.getElementById("newTermTitle").value.trim();
+  if (!title) return showAlert("عنوان ترم الزامی است.");
+  const id = "term_" + Date.now().toString(36);
+  await api("/api/admin/terms", { method: "POST", body: JSON.stringify({ id, title }) });
+  selectedTermFilter = id;
+  currentTab = "courses";
+  await loadAll();
+  renderApp();
+}
+
+async function editTermPrompt(id) {
+  const t = termsCache.find(x => x.id === id);
+  if (!t) return;
+  const title = await showPrompt("عنوان جدید ترم:", t.title, { title: "ویرایش ترم" });
+  if (title === null) return;
+  await api("/api/admin/terms/" + encodeURIComponent(id), { method: "PUT", body: JSON.stringify({ title }) });
+  renderTabContent();
+}
+
+async function deleteTerm(id) {
+  const confirmed = await showConfirm("این ترم حذف بشه؟ ترم باید بدون درس باشه.", {
+    title: "حذف ترم", confirmLabel: "حذف", danger: true
+  });
+  if (!confirmed) return;
+  try {
+    await api("/api/admin/terms/" + encodeURIComponent(id), { method: "DELETE" });
+    if (selectedTermFilter === id) selectedTermFilter = "term_2";
+    await loadAll();
+    renderTabContent();
+  } catch (e) {
+    showAlert(e.message, "خطا");
+  }
+}
+
+async function renderCoursesTab(el) {
+  [termsCache, coursesCache] = await Promise.all([
+    api("/api/admin/terms"),
+    api("/api/admin/courses")
+  ]);
+  if (!termsCache.some(t => t.id === selectedTermFilter)) selectedTermFilter = termsCache[0]?.id || "";
+  const selectedTerm = termsCache.find(t => t.id === selectedTermFilter);
+  const termCourses = coursesCache.filter(c => (c.term_id || "term_2") === selectedTermFilter);
+
+  el.innerHTML = `
+    <div class="card">
+      <h3>انتخاب ترم</h3>
+      <div class="row">
+        <select id="termFilter" onchange="onTermFilterChange(this.value)">
+          ${termsCache.map(t => `<option value="${escapeHTML(t.id)}" ${selectedTermFilter===t.id?'selected':''}>${escapeHTML(t.title)}</option>`).join("")}
+        </select>
+        <button class="btn btn-ghost" onclick="switchTab('terms')">مدیریت ترم‌ها</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>افزودن درس به ${escapeHTML(selectedTerm?.title || "ترم")}</h3>
+      <div class="row">
+        <input id="newCourseTitle" placeholder="عنوان درس">
+        <input id="newCourseIcon" placeholder="آیکون lucide (اختیاری، مثلاً book-open)">
+      </div>
+      <button class="btn btn-add" onclick="addCourse()">افزودن درس</button>
+    </div>
+
+    <div class="card">
+      <h3>درس‌های ${escapeHTML(selectedTerm?.title || "ترم")} (${termCourses.length})</h3>
+      ${termCourses.length ? termCourses.map(c => `
         <div class="item">
           <div class="item-main">
             <div class="item-title">${escapeHTML(c.title)}</div>
-            <div class="item-sub">آیکون: ${escapeHTML(c.icon||'-')}</div>
+            <div class="item-sub">ترم: ${escapeHTML(selectedTerm?.title || c.term_id || "ترم ۲")} · آیکون: ${escapeHTML(c.icon||'-')}</div>
           </div>
           <div class="item-actions">
-            <button class="icon-btn" onclick="editCoursePrompt('${c.id}')"><i data-lucide="pencil"></i></button>
-            <button class="icon-btn danger" onclick="deleteCourse('${c.id}')"><i data-lucide="trash-2"></i></button>
+            <button class="icon-btn" onclick="editCoursePrompt('${escapeHTML(c.id)}')"><i data-lucide="pencil"></i></button>
+            <button class="icon-btn danger" onclick="deleteCourse('${escapeHTML(c.id)}')"><i data-lucide="trash-2"></i></button>
           </div>
         </div>
-      `).join("") : `<div class="empty">هنوز دوره‌ای ثبت نشده.</div>`}
+      `).join("") : `<div class="empty">برای این ترم هنوز درسی ثبت نشده.</div>`}
     </div>
   `;
+}
+
+function onTermFilterChange(v) {
+  selectedTermFilter = v;
+  renderTabContent();
 }
 
 async function addCourse() {
   const title = document.getElementById("newCourseTitle").value.trim();
   const icon = document.getElementById("newCourseIcon").value.trim();
-  if (!title) return showAlert("عنوان دوره الزامی است.");
+  if (!title) return showAlert("عنوان درس الزامی است.");
+  if (!selectedTermFilter) return showAlert("اول یک ترم انتخاب کن.");
   const id = generateId("c");
-  await api("/api/admin/courses", { method: "POST", body: JSON.stringify({ id, title, icon }) });
+  await api("/api/admin/courses", {
+    method: "POST",
+    body: JSON.stringify({ id, title, icon, term_id: selectedTermFilter })
+  });
   renderTabContent();
 }
 
 async function editCoursePrompt(id) {
   const c = coursesCache.find(x => x.id === id);
-  const title = await showPrompt("عنوان جدید دوره:", c.title, { title: "ویرایش دوره" });
+  if (!c) return;
+  const title = await showPrompt("عنوان جدید درس:", c.title, { title: "ویرایش درس" });
   if (title === null) return;
-  const icon = await showPrompt("آیکون جدید (lucide):", c.icon || "", { title: "ویرایش دوره" });
+  const icon = await showPrompt("آیکون جدید (lucide):", c.icon || "", { title: "ویرایش درس" });
   if (icon === null) return;
-  await api("/api/admin/courses/" + encodeURIComponent(id), { method: "PUT", body: JSON.stringify({ title, icon }) });
+
+  const termOptions = termsCache.map((t, i) => `${i + 1}. ${t.title}`).join("\n");
+  const currentIndex = Math.max(0, termsCache.findIndex(t => t.id === (c.term_id || "term_2")));
+  const termNumber = await showPrompt(
+    "شماره ترم جدید را وارد کن:\n" + termOptions,
+    String(currentIndex + 1),
+    { title: "انتقال درس به ترم دیگر" }
+  );
+  if (termNumber === null) return;
+  const termIndex = Number(termNumber) - 1;
+  if (!Number.isInteger(termIndex) || !termsCache[termIndex]) return showAlert("شماره ترم معتبر نیست.");
+
+  await api("/api/admin/courses/" + encodeURIComponent(id), {
+    method: "PUT",
+    body: JSON.stringify({ title, icon, term_id: termsCache[termIndex].id })
+  });
   renderTabContent();
 }
 
 async function deleteCourse(id) {
-  const confirmed = await showConfirm("این دوره و همه سوالاتش حذف بشه؟ این عملیات قابل بازگشت نیست.", { title: "حذف دوره", confirmLabel: "حذف", danger: true });
+  const confirmed = await showConfirm("این درس و همه سوالاتش حذف بشه؟ این عملیات قابل بازگشت نیست.", {
+    title: "حذف درس", confirmLabel: "حذف", danger: true
+  });
   if (!confirmed) return;
   await api("/api/admin/courses/" + encodeURIComponent(id), { method: "DELETE" });
   renderTabContent();

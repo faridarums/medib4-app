@@ -3697,6 +3697,8 @@ COURSES
 const API_BASE="https://medib4-worker.medib4aru.workers.dev";
 
 let courses=[];
+let terms=[];
+let currentTermId="";
 
 let questionBanks={};
 
@@ -3710,19 +3712,22 @@ async function loadAppData(){
 
     try{
 
-        const [coursesRes,questionsRes]=
+        const [termsRes,coursesRes,questionsRes]=
             await Promise.all([
+                fetch(API_BASE+"/api/terms"),
                 fetch(API_BASE+"/api/courses"),
                 fetch(API_BASE+"/api/questions")
             ]);
 
-        if(!coursesRes.ok||!questionsRes.ok){
+        if(!termsRes.ok||!coursesRes.ok||!questionsRes.ok){
 
             throw new Error("bad response");
 
         }
 
+        terms=await termsRes.json();
         courses=await coursesRes.json();
+        if(!currentTermId && terms.length) currentTermId=terms[0].id;
 
         const allQuestions=
             await questionsRes.json();
@@ -5524,36 +5529,40 @@ function renderHome(){
 
         <div class="semester-grid">
 
-            <div
-                class="semester-card"
-                onclick="openSemester(2)"
-            >
+            ${
+                terms.length
+                    ? terms.map(term=>`
+                        <div
+                            class="semester-card"
+                            onclick="openSemester('${escapeHTML(term.id)}')"
+                        >
 
-                <div class="semester-icon">
+                            <div class="semester-icon">
 
-                    <i
-                        data-lucide="graduation-cap"
-                    ></i>
+                                <i
+                                    data-lucide="graduation-cap"
+                                ></i>
 
-                </div>
+                            </div>
 
-                <div class="semester-info">
+                            <div class="semester-info">
+                                <strong>
+                                    ${escapeHTML(term.title)}
+                                </strong>
+                            </div>
 
-                    <strong>
-                        ترم ۲
-                    </strong>
+                            <div class="semester-arrow">
 
-                </div>
+                                <i
+                                    data-lucide="chevron-left"
+                                ></i>
 
-                <div class="semester-arrow">
+                            </div>
 
-                    <i
-                        data-lucide="chevron-left"
-                    ></i>
-
-                </div>
-
-            </div>
+                        </div>
+                    `).join("")
+                    : `<div class="muted-small" style="padding:24px;text-align:center;">هنوز ترمی ثبت نشده است.</div>`
+            }
 
         </div>
 
@@ -5563,10 +5572,11 @@ function renderHome(){
 
 }
 
-function openSemester(semester){
+function openSemester(semesterId){
 
-    if(semester!==2)return;
+    if(!terms.some(t=>t.id===semesterId))return;
 
+    currentTermId=semesterId;
     navigate("courses");
 
 }
@@ -5576,6 +5586,9 @@ COURSES
 ===================================================== */
 
 function renderCourses(){
+
+    const currentTerm=terms.find(t=>t.id===currentTermId);
+    const termCourses=courses.filter(course=>(course.term_id||"term_2")===currentTermId);
 
     return `
 
@@ -5596,7 +5609,7 @@ function renderCourses(){
         <div class="page-title">
 
             <h1>
-                درس‌های ترم ۲
+                درس‌های ${escapeHTML(currentTerm ? currentTerm.title : "ترم")}
             </h1>
 
         </div>
@@ -5604,9 +5617,9 @@ function renderCourses(){
         <div class="course-grid">
 
             ${
-                courses
-                    .map(courseCard)
-                    .join("")
+                termCourses.length
+                    ? termCourses.map(courseCard).join("")
+                    : `<div class="muted-small" style="grid-column:1/-1;padding:24px;text-align:center;">برای این ترم هنوز درسی اضافه نشده است.</div>`
             }
 
         </div>
