@@ -613,7 +613,8 @@ body.light .course-icon{
 }
 
 .kidney-svg,
-.lungs-svg{
+.lungs-svg,
+.thyroid-svg{
     width:43px!important;
     height:43px!important;
 
@@ -629,7 +630,8 @@ body.light .course-icon{
 }
 
 .course-card:hover .kidney-svg,
-.course-card:hover .lungs-svg{
+.course-card:hover .lungs-svg,
+.course-card:hover .thyroid-svg{
     transform:scale(1.05);
 
     filter:
@@ -3182,7 +3184,8 @@ SMALL DEVICES
     }
 
     .kidney-svg,
-    .lungs-svg{
+    .lungs-svg,
+    .thyroid-svg{
         width:38px!important;
         height:38px!important;
     }
@@ -5144,6 +5147,24 @@ function lungsSVG(){
 }
 
 /* =====================================================
+THYROID SVG
+===================================================== */
+
+function thyroidSVG(){
+    return `
+    <svg class="thyroid-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <g stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 9v9"/>
+        <path d="M32 18c-5-7-15-5-17 3-2 7 5 12 12 9l5-5 5 5c7 3 14-2 12-9-2-8-12-10-17-3Z"/>
+        <path d="M32 25v12"/>
+        <path d="M32 37c-7-5-15 1-13 8 2 6 9 8 13 3 4 5 11 3 13-3 2-7-6-13-13-8Z"/>
+        <path d="M32 48v7"/>
+        <circle cx="32" cy="7" r="2"/>
+      </g>
+    </svg>`;
+}
+
+/* =====================================================
 ICON
 ===================================================== */
 
@@ -5158,6 +5179,12 @@ function customCourseIcon(icon){
     if(icon==="lungs"){
 
         return lungsSVG();
+
+    }
+
+    if(icon==="thyroid"){
+
+        return thyroidSVG();
 
     }
 
